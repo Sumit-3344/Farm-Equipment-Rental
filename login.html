@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FarmRent — Login & Portal Access</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="auth.js"></script>
+  <style>
+    /* ─── Reset & Color Tokens ──────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-50:  #f0fdf4;
+      --green-100: #dcfce7;
+      --green-200: #bbf7d0;
+      --green-500: #22c55e;
+      --green-600: #16a34a;
+      --green-700: #15803d;
+      --green-800: #166534;
+      --green-900: #14532d;
+      --blue-50:   #eff6ff;
+      --blue-100:  #dbeafe;
+      --blue-600:  #2563eb;
+      --blue-700:  #1d4ed8;
+      --orange-50: #fff7ed;
+      --orange-100:#ffedd5;
+      --orange-600:#ea580c;
+      --orange-700:#c2410c;
+      --gray-50:   #f9fafb;
+      --gray-100:  #f3f4f6;
+      --gray-200:  #e5e7eb;
+      --gray-300:  #d1d5db;
+      --gray-400:  #9ca3af;
+      --gray-500:  #6b7280;
+      --gray-600:  #4b5563;
+      --gray-700:  #374151;
+      --gray-800:  #1f2937;
+      --gray-900:  #111827;
+
+      /* Active theme variables (dynamically updated by role) */
+      --theme-primary: var(--green-600);
+      --theme-hover: var(--green-700);
+      --theme-light: var(--green-50);
+      --theme-badge-bg: var(--green-100);
+      --theme-badge-text: var(--green-800);
+      --theme-border: var(--green-200);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--gray-900);
+      background: var(--gray-50);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; border: none; outline: none; }
+    input, select { font-family: inherit; border: none; outline: none; background: transparent; width: 100%; }
+
+    /* ─── Layout Wrapper ────────────────────────────────────── */
+    .auth-container {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* ─── Left Showcase Panel ───────────────────────────────── */
+    .showcase-side {
+      flex: 1.1;
+      background: linear-gradient(135deg, rgba(20, 83, 45, 0.92) 0%, rgba(22, 163, 74, 0.85) 100%),
+                  url('https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1400&auto=format&fit=crop&q=80') center/cover no-repeat;
+      padding: 48px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .showcase-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .showcase-logo-icon {
+      background: #fff;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green-700);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .showcase-logo-icon svg { width: 22px; height: 22px; }
+    .showcase-brand { font-size: 22px; font-weight: 800; color: #fff; line-height: 1.1; }
+    .showcase-tag { font-size: 11px; color: var(--green-200); }
+
+    .showcase-content {
+      margin: 40px 0;
+      max-width: 520px;
+    }
+    .showcase-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+    .showcase-title {
+      font-size: clamp(28px, 3.5vw, 40px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .showcase-desc {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    /* Stats Cards Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .stat-number { font-size: 20px; font-weight: 800; color: #fff; }
+    .stat-label { font-size: 11px; color: var(--green-100); margin-top: 2px; }
+
+    /* Testimonial Quote */
+    .showcase-quote {
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 16px 20px;
+      border-left: 4px solid #fff;
+      font-size: 13px;
+      font-style: italic;
+      color: #f0fdf4;
+    }
+    .quote-author {
+      font-style: normal;
+      font-weight: 700;
+      font-size: 12px;
+      margin-top: 6px;
+      color: #fff;
+    }
+
+    .showcase-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* ─── Right Auth Form Panel ─────────────────────────────── */
+    .auth-side {
+      flex: 1;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 32px;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .top-nav-bar {
+      position: absolute;
+      top: 24px;
+      left: 32px;
+      right: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-600);
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      transition: all .2s;
+    }
+    .btn-back-home:hover {
+      background: var(--gray-100);
+      color: var(--gray-900);
+    }
+    .help-link {
+      font-size: 13px;
+      color: var(--gray-500);
+      font-weight: 500;
+    }
+    .help-link:hover { color: var(--theme-primary); }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      margin-top: 40px;
+      margin-bottom: 20px;
+    }
+
+    .auth-header {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .auth-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--gray-900);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .auth-subtitle {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+
+    /* ─── Role Switcher Tabs ────────────────────────────────── */
+    .role-tabs-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--gray-400);
+      margin-bottom: 8px;
+    }
+    .role-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: var(--gray-100);
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .role-tab-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 6px;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--gray-600);
+      font-size: 12px;
+      font-weight: 600;
+      transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .role-tab-btn svg { width: 18px; height: 18px; }
+    .role-tab-btn:hover { color: var(--gray-900); }
+    .role-tab-btn.active {
+      background: #fff;
+      color: var(--theme-primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* Dynamic Role Info Banner */
+    .role-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--theme-light);
+      border: 1px solid var(--theme-border);
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: var(--theme-badge-text);
+      font-weight: 500;
+      transition: all .25s ease;
+    }
+    .role-banner svg { flex-shrink: 0; width: 16px; height: 16px; }
+
+    /* ─── Auth Method Tabs (Password vs OTP) ─────────────────── */
+    .auth-method-nav {
+      display: flex;
+      border-bottom: 2px solid var(--gray-100);
+      margin-bottom: 20px;
+      gap: 20px;
+    }
+    .method-nav-item {
+      padding-bottom: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-400);
+      position: relative;
+      cursor: pointer;
+      transition: color .2s;
+    }
+    .method-nav-item:hover { color: var(--gray-700); }
+    .method-nav-item.active {
+      color: var(--theme-primary);
+    }
+    .method-nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--theme-primary);
+      border-radius: 2px;
+    }
+
+    /* ─── Form Elements ─────────────────────────────────────── */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 6px;
+    }
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 9px;
+      padding: 10px 14px;
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .input-wrapper:focus-within {
+      border-color: var(--theme-primary);
+      box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+    }
+    .input-icon {
+      color: var(--gray-400);
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .input-wrapper input {
+      font-size: 13px;
+      color: var(--gray-800);
+    }
+    .input-wrapper input::placeholder {
+      color: var(--gray-400);
+    }
+    .toggle-pwd-btn {
+      color: var(--gray-400);
+      background: none;
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      transition: color .2s;
+    }
+    .toggle-pwd-btn:hover { color: var(--gray-700); }
+    .toggle-pwd-btn svg { width: 18px; height: 18px; }
+
+    /* Phone prefix badge */
+    .phone-prefix {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-right: 8px;
+      padding-right: 8px;
+      border-right: 1.5px solid var(--gray-200);
+    }
+
+    /* ─── OTP Digit Boxes ───────────────────────────────────── */
+    .otp-inputs-grid {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      margin: 14px 0;
+    }
+    .otp-digit {
+      width: 48px;
+      height: 52px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gray-900);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 8px;
+      background: #fff;
+      transition: all .2s;
+    }
+    .otp-digit:focus {
+      border-color: var(--theme-primary);
+      box-shadow: 0 0 0 3px rgba(22,163,74,.15);
+      background: var(--theme-light);
+    }
+    .otp-timer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-top: 6px;
+    }
+    .resend-otp-btn {
+      color: var(--theme-primary);
+      font-weight: 600;
+      background: none;
+    }
+    .resend-otp-btn:disabled {
+      color: var(--gray-400);
+      cursor: not-allowed;
+    }
+
+    /* ─── Meta Row (Remember & Forgot) ──────────────────────── */
+    .form-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gray-600);
+      cursor: pointer;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--theme-primary);
+      cursor: pointer;
+    }
+    .forgot-link {
+      color: var(--theme-primary);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    /* ─── Submit Button ─────────────────────────────────────── */
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--theme-primary);
+      color: #fff;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      transition: all .2s;
+    }
+    .btn-submit:hover {
+      background: var(--theme-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 5px 14px rgba(0,0,0,0.15);
+    }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* ─── Demo Credentials Bar ──────────────────────────────── */
+    .demo-credentials-bar {
+      margin-top: 24px;
+      padding: 14px;
+      background: var(--gray-50);
+      border: 1px dashed var(--gray-300);
+      border-radius: 10px;
+    }
+    .demo-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--gray-500);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .demo-btns-row {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-demo-chip {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid var(--gray-200);
+      background: #fff;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all .2s;
+    }
+    .btn-demo-chip:hover {
+      border-color: var(--theme-primary);
+      color: var(--theme-primary);
+      background: var(--theme-light);
+    }
+
+    /* ─── Switch To Register/Login Toggle ───────────────────── */
+    .auth-toggle-footer {
+      text-align: center;
+      font-size: 13px;
+      color: var(--gray-600);
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--gray-100);
+    }
+    .auth-toggle-btn {
+      color: var(--theme-primary);
+      font-weight: 700;
+      background: none;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+    .auth-toggle-btn:hover { text-decoration: underline; }
+
+    /* ─── Register Specific Fields ──────────────────────────── */
+    .register-fields {
+      display: none;
+    }
+    .register-mode .register-fields {
+      display: block;
+    }
+    .register-mode .login-fields {
+      display: none;
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ─── Forgot Password Modal ─────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: #fff;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: var(--gray-100);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-600);
+      cursor: pointer;
+    }
+    .modal-close:hover { background: var(--gray-200); }
+
+    /* ─── Toast System ──────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: var(--gray-900);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity .3s, transform .3s;
+      z-index: 9999;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 360px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: var(--green-800); }
+    .toast.error { background: #b91c1c; }
+    .toast.info { background: #1e40af; }
+
+    /* ─── Responsive Media Queries ──────────────────────────── */
+    @media (max-width: 960px) {
+      .auth-container { flex-direction: column; }
+      .showcase-side {
+        flex: none;
+        padding: 32px 24px;
+        min-height: 260px;
+      }
+      .stats-grid, .showcase-quote, .showcase-footer { display: none; }
+      .showcase-content { margin: 16px 0; }
+      .showcase-title { font-size: 24px; margin-bottom: 8px; }
+      .showcase-desc { font-size: 13px; margin-bottom: 0; }
+      .auth-side { padding: 32px 20px; }
+      .top-nav-bar { position: relative; top: 0; left: 0; right: 0; margin-bottom: 20px; width: 100%; max-width: 440px; }
+      .auth-card { margin-top: 0; }
+    }
+    @media (max-width: 480px) {
+      .form-grid-2 { grid-template-columns: 1fr; }
+      .otp-digit { width: 40px; height: 46px; font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-container" id="authContainer">
+
+  <!-- ════════════════ LEFT SHOWCASE PANEL ════════════════ -->
+  <aside class="showcase-side">
+    
+    <!-- Top Branding -->
+    <a href="index.html" class="showcase-logo">
+      <div class="showcase-logo-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0zm14 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM5 7h8l3 5H5V7zm13 3l-3-5h1a2 2 0 0 1 2 2v3z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="showcase-brand">FarmRent</div>
+        <div class="showcase-tag">Farm Equipment Rental System</div>
+      </div>
+    </a>
+
+    <!-- Mid Promotional Content -->
+    <div class="showcase-content">
+      <div class="showcase-badge" id="roleHighlightBadge">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span>Trusted by 10,000+ Indian Farmers</span>
+      </div>
+
+      <h1 class="showcase-title" id="showcaseTitle">Smart Agriculture Equipment Rentals</h1>
+      <p class="showcase-desc" id="showcaseDesc">
+        Empowering farmers with high-tech machinery on demand, while helping equipment owners monetize idle tractors and harvesters.
+      </p>
+
+      <!-- Key Platform Metrics -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">1,400+</div>
+          <div class="stat-label">Verified Machines</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">98.6%</div>
+          <div class="stat-label">On-Time Delivery</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">₹4.8M+</div>
+          <div class="stat-label">Farmer Savings</div>
+        </div>
+      </div>
+
+      <!-- Testimonial -->
+      <div class="showcase-quote" id="showcaseQuote">
+        "Renting a John Deere 5050D for 3 days during harvest saved my crop and cost me 70% less than purchasing."
+        <div class="quote-author">— Ramesh Patil, Farmer (Satara, Maharashtra)</div>
+      </div>
+    </div>
+
+    <!-- Bottom Showcase Footer -->
+    <div class="showcase-footer">
+      <span>🔒 256-Bit SSL Encrypted Access</span>
+      <span>24/7 Helpline: +91 98765 43210</span>
+    </div>
+
+  </aside>
+
+  <!-- ════════════════ RIGHT AUTHENTICATION PANEL ════════════════ -->
+  <main class="auth-side">
+
+    <!-- Top Navigation Header -->
+    <div class="top-nav-bar">
+      <a href="index.html" class="btn-back-home">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Home
+      </a>
+      <a href="index.html#contact" class="help-link">Need Help?</a>
+    </div>
+
+    <div class="auth-card" id="authCard">
+
+      <!-- Form Title Header -->
+      <div class="auth-header">
+        <h2 class="auth-title" id="authHeading">
+          <span>Welcome Back</span>
+          <span id="roleEmoji">👨‍🌾</span>
+        </h2>
+        <p class="auth-subtitle" id="authSubheading">Please select your role and sign in to continue</p>
+      </div>
+
+      <!-- Role Selector Tabs -->
+      <div class="role-tabs-label">Select Account Type</div>
+      <div class="role-tabs">
+        <button type="button" class="role-tab-btn active" id="tabFarmer" onclick="switchRole('farmer')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          Farmer
+        </button>
+
+        <button type="button" class="role-tab-btn" id="tabOwner" onclick="switchRole('owner')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0zm14 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM5 7h8l3 5H5V7zm13 3l-3-5h1a2 2 0 0 1 2 2v3z"/>
+          </svg>
+          Owner
+        </button>
+
+        <button type="button" class="role-tab-btn" id="tabAdmin" onclick="switchRole('admin')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
+          </svg>
+          Admin
+        </button>
+      </div>
+
+      <!-- Contextual Role Banner -->
+      <div class="role-banner" id="roleBanner">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span id="roleBannerText">Farmer Mode: Browse equipment, compare rental rates, and make instant bookings.</span>
+      </div>
+
+      <!-- Auth Method Selector (Password vs OTP) -->
+      <div class="auth-method-nav" id="methodNav">
+        <div class="method-nav-item active" id="methodPasswordTab" onclick="switchAuthMethod('password')">
+          Password Login
+        </div>
+        <div class="method-nav-item" id="methodOtpTab" onclick="switchAuthMethod('otp')">
+          Mobile OTP Login
+        </div>
+      </div>
+
+      <!-- ═══════════════ MAIN FORM ═══════════════ -->
+      <form id="mainAuthForm" onsubmit="handleFormSubmit(event)">
+
+        <!-- ──────────────── LOGIN FIELDS: PASSWORD MODE ──────────────── -->
+        <div id="loginPasswordSection">
+          <div class="form-group">
+            <label class="form-label" id="identifierLabel">Mobile Number or Email</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+              <input type="text" id="loginIdentifier" placeholder="e.g. 9876543210 or farmer@farmrent.com" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input type="password" id="loginPassword" placeholder="Enter your password" required />
+              <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('loginPassword', this)" aria-label="Toggle password visibility">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────── LOGIN FIELDS: OTP MODE ──────────────── -->
+        <div id="loginOtpSection" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">Registered Mobile Number</label>
+            <div class="input-wrapper">
+              <span class="phone-prefix">+91</span>
+              <input type="tel" id="otpMobileInput" placeholder="10-digit mobile number" maxlength="10" />
+              <button type="button" class="btn-demo-chip" style="flex:none; padding:4px 8px;" onclick="sendOtpCode()">
+                Send OTP
+              </button>
+            </div>
+          </div>
+
+          <div id="otpInputGroup" style="display: none;">
+            <label class="form-label">Enter 6-Digit OTP</label>
+            <div class="otp-inputs-grid">
+              <input type="text" maxlength="1" class="otp-digit" oninput="handleOtpInput(this, 0)" onkeydown="handleOtpKey(event, 0)" />
+              <input type="text" maxlength="1" class="otp-digit" oninput="handleOtpInput(this, 1)" onkeydown="handleOtpKey(event, 1)" />
+              <input type="text" maxlength="1" class="otp-digit" oninput="handleOtpInput(this, 2)" onkeydown="handleOtpKey(event, 2)" />
+              <input type="text" maxlength="1" class="otp-digit" oninput="handleOtpInput(this, 3)" onkeydown="handleOtpKey(event, 3)" />
+              <input type="text" maxlength="1" class="otp-digit" oninput="handleOtpInput(this, 4)" onkeydown="handleOtpKey(event, 4)" />
+              <input type="text" maxlength="1" class="otp-digit" oninput="handleOtpInput(this, 5)" onkeydown="handleOtpKey(event, 5)" />
+            </div>
+            <div class="otp-timer-row">
+              <span id="otpTimerText">OTP expires in: <strong id="timerCountdown">00:59</strong></span>
+              <button type="button" class="resend-otp-btn" id="resendBtn" onclick="sendOtpCode()" disabled>Resend OTP</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────── REGISTRATION FIELDS (WHEN IN REGISTER TAB) ──────────────── -->
+        <div class="register-fields" id="registerSection">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <div class="input-wrapper">
+                <input type="text" id="regFullName" placeholder="e.g. Vikram Patil" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile Number</label>
+              <div class="input-wrapper">
+                <span class="phone-prefix">+91</span>
+                <input type="tel" id="regMobile" placeholder="9876543210" maxlength="10" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <div class="input-wrapper">
+                <input type="email" id="regEmail" placeholder="name@example.com" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">District / City</label>
+              <div class="input-wrapper">
+                <input type="text" id="regLocation" placeholder="e.g. Pune, Maharashtra" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" id="regOwnerExtraField" style="display: none;">
+            <label class="form-label">Primary Equipment Owned</label>
+            <div class="input-wrapper">
+              <select id="regEquipmentType">
+                <option value="Tractor">Tractor (e.g. Mahindra, John Deere)</option>
+                <option value="Harvester">Harvester / Combine</option>
+                <option value="Rotavator">Rotavator / Cultivator</option>
+                <option value="Sprayer">Tractor-Mounted Sprayer</option>
+                <option value="SeedDrill">Seed Drill Machine</option>
+                <option value="Other">Multiple / Other Implements</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Create Password</label>
+              <div class="input-wrapper">
+                <input type="password" id="regPassword" placeholder="Min 8 characters" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <div class="input-wrapper">
+                <input type="password" id="regConfirmPassword" placeholder="Re-enter password" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────── REMEMBER ME & FORGOT PASSWORD ──────────────── -->
+        <div class="form-meta-row" id="formMetaRow">
+          <label class="checkbox-label">
+            <input type="checkbox" id="rememberMe" checked />
+            <span>Remember this device</span>
+          </label>
+          <span class="forgot-link" onclick="openForgotModal()">Forgot password?</span>
+        </div>
+
+        <!-- ──────────────── SUBMIT BUTTON ──────────────── -->
+        <button type="submit" class="btn-submit" id="btnSubmit">
+          <span id="submitBtnText">Sign In as Farmer</span>
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+
+      </form>
+
+      <!-- ──────────────── QUICK DEMO CREDENTIALS BAR ──────────────── -->
+      <div class="demo-credentials-bar" id="demoCredentialsBar">
+        <div class="demo-title">
+          <span>⚡ Quick Fill Demo Accounts</span>
+          <span style="font-size: 10px; color: var(--gray-400);">Click to auto-test</span>
+        </div>
+        <div class="demo-btns-row">
+          <button type="button" class="btn-demo-chip" onclick="fillDemoCredentials('farmer')">
+            👨‍🌾 Farmer Demo
+          </button>
+          <button type="button" class="btn-demo-chip" onclick="fillDemoCredentials('owner')">
+            🚜 Owner Demo
+          </button>
+          <button type="button" class="btn-demo-chip" onclick="fillDemoCredentials('admin')">
+            🛡️ Admin Demo
+          </button>
+        </div>
+      </div>
+
+      <!-- ──────────────── TOGGLE LOGIN / REGISTER ──────────────── -->
+      <div class="auth-toggle-footer" id="authToggleFooter">
+        <span id="toggleQuestion">Don't have an account yet?</span>
+        <button type="button" class="auth-toggle-btn" id="toggleModeBtn" onclick="toggleAuthMode()">
+          Register Now
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+<!-- ════════════════ FORGOT PASSWORD MODAL ════════════════ -->
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeForgotModal()" aria-label="Close modal">✕</button>
+    <div style="margin-bottom: 20px;">
+      <h3 style="font-size: 18px; font-weight: 800; color: var(--gray-900);">Reset Your Password</h3>
+      <p style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">
+        Enter your registered mobile or email to receive a password reset link or OTP.
+      </p>
+    </div>
+
+    <form onsubmit="handleForgotSubmit(event)">
+      <div class="form-group">
+        <label class="form-label">Registered Mobile or Email</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input type="text" id="forgotInput" placeholder="Enter mobile or email" required />
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" style="margin-top: 10px;">
+        Send Reset Link &amp; OTP
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════════ TOAST NOTIFICATION ════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════ JAVASCRIPT LOGIC ════════════════ -->
+<script>
+  /* ── State Management ── */
+  var currentRole = 'farmer'; // 'farmer' | 'owner' | 'admin'
+  var authMode = 'login';     // 'login' | 'register'
+  var authMethod = 'password';// 'password' | 'otp'
+  var otpCountdownInterval;
+
+  /* ── Role Configurations ── */
+  var roleConfig = {
+    farmer: {
+      name: 'Farmer',
+      emoji: '👨‍🌾',
+      primary: '#16a34a',
+      hover: '#15803d',
+      light: '#f0fdf4',
+      badgeBg: '#dcfce7',
+      badgeText: '#166534',
+      border: '#bbf7d0',
+      banner: 'Farmer Mode: Browse equipment, compare rental rates, and make instant bookings.',
+      title: 'Rent Machinery with Confidence',
+      desc: 'Connect with verified local tractor and equipment owners to boost your crop yield at minimum cost.',
+      badge: 'Trusted by 10,000+ Farmers',
+      quote: '"Renting a John Deere 5050D for 3 days during harvest saved my crop and cost me 70% less than purchasing."',
+      author: '— Ramesh Patil, Farmer (Satara, Maharashtra)',
+      demoUser: 'farmer@farmrent.com',
+      demoPass: 'farmer123',
+      dashboardTarget: 'Farmer Dashboard'
+    },
+    owner: {
+      name: 'Equipment Owner',
+      emoji: '🚜',
+      primary: '#2563eb',
+      hover: '#1d4ed8',
+      light: '#eff6ff',
+      badgeBg: '#dbeafe',
+      badgeText: '#1e40af',
+      border: '#bfdbfe',
+      banner: 'Owner Mode: List tractors & implements, manage rental schedules, and receive direct payments.',
+      title: 'Earn Consistent Revenue from Your Machinery',
+      desc: 'Put your idle tractors, harvesters, and rotavators to work. Guaranteed payouts and comprehensive machine safety support.',
+      badge: '1,200+ Registered Equipment Owners',
+      quote: '"My harvester was sitting idle 9 months a year. Now I earn over ₹1.5 Lakhs extra every single season through FarmRent."',
+      author: '— Balwinder Singh, Machine Owner (Ludhiana, Punjab)',
+      demoUser: 'owner@farmrent.com',
+      demoPass: 'owner123',
+      dashboardTarget: 'Owner Dashboard'
+    },
+    admin: {
+      name: 'Admin',
+      emoji: '🛡️',
+      primary: '#ea580c',
+      hover: '#c2410c',
+      light: '#fff7ed',
+      badgeBg: '#ffedd5',
+      badgeText: '#9a3412',
+      border: '#fed7aa',
+      banner: 'Admin Security Portal: Oversee transactions, approve KYC equipment listings, and system operations.',
+      title: 'FarmRent Core Administration',
+      desc: 'High-security administrative access to real-time telemetry, disputes, user verifications, and financial ledger.',
+      badge: 'FarmRent Enterprise Console',
+      quote: '"Platform safety rating: 99.98% verified transactions with complete digital audit trails."',
+      author: '— System Security & Audit Team',
+      demoUser: 'admin@farmrent.com',
+      demoPass: 'admin123',
+      dashboardTarget: 'Admin Control Center'
+    }
+  };
+
+  /* ── Initialize from URL Query Params ── */
+  window.addEventListener('DOMContentLoaded', function () {
+    var urlParams = new URLSearchParams(window.location.search);
+    var roleParam = urlParams.get('role');
+    var tabParam = urlParams.get('tab');
+
+    if (roleParam && roleConfig[roleParam.toLowerCase()]) {
+      switchRole(roleParam.toLowerCase());
+    } else {
+      switchRole('farmer');
+    }
+
+    if (tabParam === 'register') {
+      toggleAuthMode(true);
+    }
+  });
+
+  /* ── Switch Role ── */
+  function switchRole(role) {
+    currentRole = role;
+    var conf = roleConfig[role];
+
+    // Update CSS Variables dynamically
+    document.documentElement.style.setProperty('--theme-primary', conf.primary);
+    document.documentElement.style.setProperty('--theme-hover', conf.hover);
+    document.documentElement.style.setProperty('--theme-light', conf.light);
+    document.documentElement.style.setProperty('--theme-badge-bg', conf.badgeBg);
+    document.documentElement.style.setProperty('--theme-badge-text', conf.badgeText);
+    document.documentElement.style.setProperty('--theme-border', conf.border);
+
+    // Update Tab Buttons
+    document.querySelectorAll('.role-tab-btn').forEach(function (btn) {
+      btn.classList.remove('active');
+    });
+    if (role === 'farmer') document.getElementById('tabFarmer').classList.add('active');
+    if (role === 'owner') document.getElementById('tabOwner').classList.add('active');
+    if (role === 'admin') document.getElementById('tabAdmin').classList.add('active');
+
+    // Update Dynamic Texts & Showcases
+    document.getElementById('roleEmoji').textContent = conf.emoji;
+    document.getElementById('roleBannerText').textContent = conf.banner;
+    document.getElementById('showcaseTitle').textContent = conf.title;
+    document.getElementById('showcaseDesc').textContent = conf.desc;
+    document.getElementById('roleHighlightBadge').querySelector('span').textContent = conf.badge;
+    document.getElementById('showcaseQuote').innerHTML = conf.quote + '<div class="quote-author">' + conf.author + '</div>';
+
+    // Show/hide owner-specific registration field
+    var ownerExtra = document.getElementById('regOwnerExtraField');
+    if (ownerExtra) {
+      ownerExtra.style.display = (role === 'owner' && authMode === 'register') ? 'block' : 'none';
+    }
+
+    // Hide register toggle for admin (Admin is invite/system only)
+    var authToggleFooter = document.getElementById('authToggleFooter');
+    if (role === 'admin') {
+      if (authMode === 'register') toggleAuthMode(false);
+      authToggleFooter.style.display = 'none';
+    } else {
+      authToggleFooter.style.display = 'block';
+    }
+
+    updateSubmitButtonText();
+  }
+
+  /* ── Switch Auth Method (Password vs OTP) ── */
+  function switchAuthMethod(method) {
+    authMethod = method;
+    var pwdNav = document.getElementById('methodPasswordTab');
+    var otpNav = document.getElementById('methodOtpTab');
+    var pwdSec = document.getElementById('loginPasswordSection');
+    var otpSec = document.getElementById('loginOtpSection');
+    var metaRow = document.getElementById('formMetaRow');
+
+    if (method === 'password') {
+      pwdNav.classList.add('active');
+      otpNav.classList.remove('active');
+      pwdSec.style.display = 'block';
+      otpSec.style.display = 'none';
+      metaRow.style.display = 'flex';
+      document.getElementById('loginIdentifier').setAttribute('required', 'true');
+      document.getElementById('loginPassword').setAttribute('required', 'true');
+    } else {
+      otpNav.classList.add('active');
+      pwdNav.classList.remove('active');
+      pwdSec.style.display = 'none';
+      otpSec.style.display = 'block';
+      metaRow.style.display = 'none';
+      document.getElementById('loginIdentifier').removeAttribute('required');
+      document.getElementById('loginPassword').removeAttribute('required');
+    }
+    updateSubmitButtonText();
+  }
+
+  /* ── Toggle Login / Register Mode ── */
+  function toggleAuthMode(forceRegister) {
+    var authCard = document.getElementById('authCard');
+    var heading = document.getElementById('authHeading');
+    var subheading = document.getElementById('authSubheading');
+    var toggleQuestion = document.getElementById('toggleQuestion');
+    var toggleModeBtn = document.getElementById('toggleModeBtn');
+    var methodNav = document.getElementById('methodNav');
+    var demoBar = document.getElementById('demoCredentialsBar');
+    var metaRow = document.getElementById('formMetaRow');
+    var ownerExtra = document.getElementById('regOwnerExtraField');
+
+    if (forceRegister !== undefined) {
+      authMode = forceRegister ? 'register' : 'login';
+    } else {
+      authMode = (authMode === 'login') ? 'register' : 'login';
+    }
+
+    if (authMode === 'register') {
+      authCard.classList.add('register-mode');
+      heading.querySelector('span').textContent = 'Create New Account';
+      subheading.textContent = 'Join FarmRent as a verified agricultural partner';
+      toggleQuestion.textContent = 'Already have an account?';
+      toggleModeBtn.textContent = 'Sign In';
+      methodNav.style.display = 'none';
+      demoBar.style.display = 'none';
+      metaRow.style.display = 'none';
+      if (currentRole === 'owner') ownerExtra.style.display = 'block';
+    } else {
+      authCard.classList.remove('register-mode');
+      heading.querySelector('span').textContent = 'Welcome Back';
+      subheading.textContent = 'Please select your role and sign in to continue';
+      toggleQuestion.textContent = "Don't have an account yet?";
+      toggleModeBtn.textContent = 'Register Now';
+      methodNav.style.display = 'flex';
+      demoBar.style.display = 'block';
+      metaRow.style.display = 'flex';
+      if (ownerExtra) ownerExtra.style.display = 'none';
+    }
+
+    updateSubmitButtonText();
+  }
+
+  function updateSubmitButtonText() {
+    var btnText = document.getElementById('submitBtnText');
+    var conf = roleConfig[currentRole];
+    if (authMode === 'register') {
+      btnText.textContent = 'Register as ' + conf.name;
+    } else {
+      if (authMethod === 'otp') {
+        btnText.textContent = 'Verify OTP & Enter';
+      } else {
+        btnText.textContent = 'Sign In as ' + conf.name;
+      }
+    }
+  }
+
+  /* ── Password Visibility Toggle ── */
+  function togglePasswordVisibility(fieldId, btn) {
+    var field = document.getElementById(fieldId);
+    if (field.type === 'password') {
+      field.type = 'text';
+      btn.innerHTML = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    } else {
+      field.type = 'password';
+      btn.innerHTML = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    }
+  }
+
+  /* ── OTP Handling ── */
+  function sendOtpCode() {
+    var mobile = document.getElementById('otpMobileInput').value.trim();
+    var res = FarmRentAuth.sendOtp(mobile);
+    if (!res.success) {
+      showToast(res.message, 'error');
+      return;
+    }
+
+    document.getElementById('otpInputGroup').style.display = 'block';
+    showToast('6-digit OTP sent to +91 ' + mobile + ' (Use 123456 for demo)', 'info');
+
+    // Auto-fill first digit for convenience
+    var digits = document.querySelectorAll('.otp-digit');
+    if (digits.length > 0) digits[0].focus();
+
+    // Start 60s countdown
+    var timeLeft = 59;
+    var timerDisplay = document.getElementById('timerCountdown');
+    var resendBtn = document.getElementById('resendBtn');
+    resendBtn.disabled = true;
+
+    clearInterval(otpCountdownInterval);
+    otpCountdownInterval = setInterval(function () {
+      if (timeLeft <= 0) {
+        clearInterval(otpCountdownInterval);
+        timerDisplay.textContent = 'Expired';
+        resendBtn.disabled = false;
+      } else {
+        var str = timeLeft < 10 ? '0' + timeLeft : timeLeft;
+        timerDisplay.textContent = '00:' + str;
+        timeLeft--;
+      }
+    }, 1000);
+  }
+
+  function handleOtpInput(el, index) {
+    var digits = document.querySelectorAll('.otp-digit');
+    if (el.value.length === 1 && index < digits.length - 1) {
+      digits[index + 1].focus();
+    }
+  }
+
+  function handleOtpKey(e, index) {
+    var digits = document.querySelectorAll('.otp-digit');
+    if (e.key === 'Backspace' && !digits[index].value && index > 0) {
+      digits[index - 1].focus();
+    }
+  }
+
+  /* ── Demo Credentials Quick-Fill ── */
+  function fillDemoCredentials(role) {
+    if (authMode === 'register') {
+      toggleAuthMode(false);
+    }
+    switchRole(role);
+    switchAuthMethod('password');
+
+    var conf = roleConfig[role];
+    document.getElementById('loginIdentifier').value = conf.demoUser;
+    document.getElementById('loginPassword').value = conf.demoPass;
+
+    showToast('Loaded ' + conf.name + ' demo credentials!', 'success');
+  }
+
+  /* ── Form Submission ── */
+  function handleFormSubmit(e) {
+    e.preventDefault();
+    var conf = roleConfig[currentRole];
+
+    if (authMode === 'register') {
+      var name = document.getElementById('regFullName').value.trim();
+      var mobile = document.getElementById('regMobile').value.trim();
+      var email = document.getElementById('regEmail').value.trim();
+      var location = document.getElementById('regLocation').value.trim();
+      var eqType = document.getElementById('regEquipmentType') ? document.getElementById('regEquipmentType').value : '';
+      var pass = document.getElementById('regPassword').value;
+      var confirmPass = document.getElementById('regConfirmPassword').value;
+
+      if (!name || !mobile || !pass) {
+        showToast('Please fill in all required registration fields', 'error');
+        return;
+      }
+      if (pass !== confirmPass) {
+        showToast('Passwords do not match! Please check again.', 'error');
+        return;
+      }
+
+      var regRes = FarmRentAuth.register({
+        name: name,
+        mobile: mobile,
+        email: email,
+        location: location,
+        equipmentType: eqType,
+        password: pass,
+        role: currentRole
+      });
+
+      if (!regRes.success) {
+        showToast(regRes.message, 'error');
+        return;
+      }
+
+      showToast('Account created! Redirecting to ' + conf.dashboardTarget + '...', 'success');
+      setTimeout(function () {
+        window.location.href = 'dashboard.html?role=' + currentRole;
+      }, 1200);
+      return;
+    }
+
+    // Login Mode
+    if (authMethod === 'otp') {
+      var mobile = document.getElementById('otpMobileInput').value.trim();
+      var digits = document.querySelectorAll('.otp-digit');
+      var enteredOtp = '';
+      digits.forEach(function (d) { enteredOtp += d.value; });
+
+      if (!mobile || enteredOtp.length < 6) {
+        showToast('Please enter mobile number and all 6 digits (Use 123456)', 'error');
+        return;
+      }
+
+      var otpRes = FarmRentAuth.verifyOtpAndLogin(mobile, enteredOtp, currentRole);
+      if (!otpRes.success) {
+        showToast(otpRes.message, 'error');
+        return;
+      }
+
+      showToast('OTP verified! Accessing ' + conf.dashboardTarget + '...', 'success');
+      setTimeout(function () {
+        window.location.href = 'dashboard.html?role=' + currentRole;
+      }, 1200);
+    } else {
+      var idVal = document.getElementById('loginIdentifier').value.trim();
+      var passVal = document.getElementById('loginPassword').value;
+
+      if (!idVal || !passVal) {
+        showToast('Please enter your credentials', 'error');
+        return;
+      }
+
+      var authRes = FarmRentAuth.loginWithPassword(idVal, passVal, currentRole);
+      if (!authRes.success) {
+        showToast(authRes.message, 'error');
+        return;
+      }
+
+      showToast('Login successful! Accessing ' + conf.dashboardTarget + '...', 'success');
+      setTimeout(function () {
+        window.location.href = 'dashboard.html?role=' + currentRole;
+      }, 1200);
+    }
+  }
+
+  /* ── Forgot Password Modal ── */
+  function openForgotModal() {
+    document.getElementById('forgotModal').classList.add('open');
+  }
+  function closeForgotModal() {
+    document.getElementById('forgotModal').classList.remove('open');
+  }
+  function handleForgotSubmit(e) {
+    e.preventDefault();
+    var val = document.getElementById('forgotInput').value.trim();
+    if (!val) {
+      showToast('Please enter your registered contact', 'error');
+      return;
+    }
+    closeForgotModal();
+    showToast('Password reset link sent to: ' + val, 'success');
+  }
+
+  /* ── Toast Utility ── */
+  var toastTimer;
+  function showToast(msg, type) {
+    var t = document.getElementById('toast');
+    t.className = 'toast show ' + (type || 'info');
+    t.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      t.className = 'toast';
+    }, 3500);
+  }
+</script>
+
+</body>
+</html>

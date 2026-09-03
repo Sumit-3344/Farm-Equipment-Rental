@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FarmRent — Farm Equipment Rental System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="auth.js"></script>
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-50:  #f0fdf4;
+      --green-100: #dcfce7;
+      --green-200: #bbf7d0;
+      --green-600: #16a34a;
+      --green-700: #15803d;
+      --green-800: #166534;
+      --green-900: #14532d;
+      --gray-50:   #f9fafb;
+      --gray-100:  #f3f4f6;
+      --gray-200:  #e5e7eb;
+      --gray-300:  #d1d5db;
+      --gray-400:  #9ca3af;
+      --gray-500:  #6b7280;
+      --gray-600:  #4b5563;
+      --gray-700:  #374151;
+      --gray-800:  #1f2937;
+      --gray-900:  #111827;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--gray-900);
+      background: #fff;
+      line-height: 1.5;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; border: none; outline: none; }
+    input, select { font-family: inherit; border: none; outline: none; background: transparent; width: 100%; }
+    img { display: block; max-width: 100%; }
+
+    /* ─── NAVBAR ────────────────────────────────────────────── */
+    .navbar {
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: box-shadow .3s;
+    }
+    .navbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    /* Logo */
+    .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .logo-icon {
+      background: var(--green-600);
+      border-radius: 50%;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 20px; height: 20px; }
+    .logo-brand  { font-size: 18px; font-weight: 800; color: var(--green-700); line-height: 1.1; }
+    .logo-tag    { font-size: 10px; color: var(--gray-500); }
+    /* Nav links */
+    .nav-links { display: flex; align-items: center; gap: 26px; list-style: none; }
+    .nav-links a { font-size: 14px; font-weight: 500; color: var(--gray-600); transition: color .2s; }
+    .nav-links a:hover { color: var(--green-600); }
+    .nav-links a.active { color: var(--green-600); border-bottom: 2px solid var(--green-600); padding-bottom: 2px; }
+    /* Auth buttons */
+    .nav-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+    .btn-login {
+      padding: 7px 18px; font-size: 13px; font-weight: 500;
+      border: 1.5px solid var(--gray-300); border-radius: 6px;
+      background: #fff; color: var(--gray-700); transition: border-color .2s, color .2s;
+    }
+    .btn-login:hover { border-color: var(--green-600); color: var(--green-600); }
+    .btn-register {
+      padding: 7px 18px; font-size: 13px; font-weight: 600;
+      background: var(--green-600); color: #fff;
+      border-radius: 6px; display: flex; align-items: center; gap: 6px;
+      transition: background .2s;
+    }
+    .btn-register:hover { background: var(--green-700); }
+    /* Hamburger */
+    .hamburger { display: none; flex-direction: column; gap: 5px; background: none; padding: 4px; }
+    .hamburger span { display: block; width: 23px; height: 2px; background: var(--gray-700); border-radius: 2px; transition: all .3s; }
+    /* Mobile menu */
+    .mobile-menu { display: none; background: #fff; border-top: 1px solid var(--gray-100); padding: 12px 24px 16px; }
+    .mobile-menu.open { display: block; }
+    .mobile-menu a { display: block; padding: 9px 0; font-size: 14px; color: var(--gray-700); border-bottom: 1px solid var(--gray-100); }
+    .mobile-btns { display: flex; gap: 10px; margin-top: 12px; }
+    .mobile-btns button { flex: 1; padding: 9px; font-size: 13px; border-radius: 7px; font-weight: 600; }
+
+    /* ─── HERO ──────────────────────────────────────────────── */
+    .hero { position: relative; min-height: 450px; display: flex; align-items: center; overflow: hidden; }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1400&auto=format&fit=crop&q=80');
+      background-size: cover; background-position: center right;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right,
+        rgba(238,226,205,.97) 0%,
+        rgba(238,226,205,.93) 30%,
+        rgba(238,226,205,.55) 58%,
+        rgba(238,226,205,.05) 100%
+      );
+    }
+    .hero-content {
+      position: relative;
+      padding: 64px 24px 88px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .hero-text { max-width: 540px; }
+    .hero-content h1 { font-size: clamp(34px,5vw,52px); font-weight: 800; line-height: 1.1; color: var(--gray-900); }
+    .hero-content h1 .green { color: var(--green-600); }
+    .hero-subtitle { margin-top: 14px; font-size: 15px; color: var(--gray-600); max-width: 360px; }
+    .hero-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    .btn-dark {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 24px; background: var(--gray-900); color: #fff;
+      border-radius: 8px; font-size: 14px; font-weight: 600; transition: background .2s;
+    }
+    .btn-dark:hover { background: #374151; }
+    .btn-outline {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 24px; background: #fff; color: var(--gray-700);
+      border: 1.5px solid var(--gray-300); border-radius: 8px;
+      font-size: 14px; font-weight: 600; transition: background .2s;
+    }
+    .btn-outline:hover { background: var(--gray-50); }
+
+    /* ─── SEARCH BAR ────────────────────────────────────────── */
+    .search-wrap {
+      max-width: 1200px;
+      margin: -36px auto 0;
+      padding: 0 24px;
+      position: relative;
+      z-index: 10;
+    }
+    .search-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 6px 28px rgba(0,0,0,.13);
+      border: 1px solid var(--gray-100);
+      padding: 16px 18px;
+    }
+    .search-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch; }
+    .s-field {
+      flex: 1; min-width: 155px;
+      display: flex; align-items: center; gap: 10px;
+      border: 1.5px solid var(--gray-200); border-radius: 9px;
+      padding: 10px 14px; transition: border-color .2s, box-shadow .2s;
+    }
+    .s-field:focus-within { border-color: var(--green-600); box-shadow: 0 0 0 3px rgba(22,163,74,.08); }
+    .s-field .s-icon { flex-shrink: 0; color: var(--gray-400); width: 18px; height: 18px; }
+    .s-field .s-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--gray-400); margin-bottom: 2px; }
+    .s-field input, .s-field select { font-size: 13px; color: var(--gray-700); }
+    .s-field input::placeholder { color: var(--gray-400); }
+    .btn-search {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 22px; background: var(--green-600); color: #fff;
+      border-radius: 9px; font-size: 14px; font-weight: 600;
+      white-space: nowrap; flex-shrink: 0; transition: background .2s;
+    }
+    .btn-search:hover { background: var(--green-700); }
+
+    /* ─── TRUST BADGES ──────────────────────────────────────── */
+    .trust-wrap { max-width: 1200px; margin: 32px auto 0; padding: 0 24px; }
+    .trust-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+    .trust-card {
+      display: flex; align-items: center; gap: 14px;
+      background: #fff; border: 1px solid var(--gray-100);
+      border-radius: 12px; padding: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05); transition: box-shadow .2s;
+    }
+    .trust-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.10); }
+    .t-icon {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .t-icon svg { width: 22px; height: 22px; }
+    .t-icon.green  { background: var(--green-100); color: var(--green-600); }
+    .t-icon.blue   { background: #dbeafe; color: #2563eb; }
+    .t-icon.orange { background: #ffedd5; color: #ea580c; }
+    .t-icon.purple { background: #ede9fe; color: #7c3aed; }
+    .t-title { font-size: 14px; font-weight: 700; color: var(--gray-800); }
+    .t-sub   { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+
+    /* ─── FEATURED EQUIPMENT ────────────────────────────────── */
+    .featured-wrap { max-width: 1200px; margin: 36px auto 36px; padding: 0 24px; }
+    .sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .sec-title  { font-size: 20px; font-weight: 800; color: var(--gray-900); }
+    .view-all   { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--green-600); }
+    .view-all:hover { color: var(--green-700); }
+    .eq-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; }
+    /* Card */
+    .eq-card {
+      background: #fff; border: 1px solid var(--gray-100);
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      transition: box-shadow .25s, transform .25s;
+    }
+    .eq-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.13); transform: translateY(-3px); }
+    .eq-img { position: relative; height: 168px; overflow: hidden; }
+    .eq-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+    .eq-card:hover .eq-img img { transform: scale(1.07); }
+    .heart-btn {
+      position: absolute; top: 10px; right: 10px;
+      width: 32px; height: 32px; background: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,.15); transition: transform .2s; z-index: 2;
+    }
+    .heart-btn:hover { transform: scale(1.15); }
+    .heart-btn svg { width: 16px; height: 16px; fill: none; stroke: #9ca3af; stroke-width: 2; transition: fill .2s, stroke .2s; }
+    .heart-btn.liked svg { fill: #ef4444; stroke: #ef4444; }
+    .eq-body { padding: 12px 14px 14px; }
+    .eq-name { font-size: 14px; font-weight: 700; color: var(--gray-900); margin-bottom: 5px; }
+    .eq-cat  { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--gray-500); margin-bottom: 10px; }
+    .eq-cat svg { width: 13px; height: 13px; }
+    .eq-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .eq-price { font-size: 15px; font-weight: 700; color: var(--green-700); }
+    .eq-price small { font-size: 11px; font-weight: 400; color: var(--gray-400); }
+    .badge-avail {
+      font-size: 11px; font-weight: 600;
+      background: var(--green-100); color: var(--green-700);
+      padding: 3px 10px; border-radius: 20px;
+    }
+    .btn-book {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 9px; background: var(--green-600); color: #fff;
+      border-radius: 8px; font-size: 13px; font-weight: 600; transition: background .2s;
+    }
+    .btn-book:hover { background: var(--green-700); }
+    .btn-book svg { width: 14px; height: 14px; }
+    .no-results {
+      grid-column: 1/-1; text-align: center;
+      padding: 48px 24px; color: var(--gray-500); font-size: 15px;
+    }
+
+    /* ─── DASHBOARD SELECTOR ────────────────────────────────── */
+    .dash-section { background: var(--gray-50); padding: 48px 24px; }
+    .dash-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 24px; align-items: start;
+    }
+    .dash-intro h2 { font-size: 20px; font-weight: 800; color: var(--gray-900); margin-bottom: 10px; }
+    .dash-intro p  { font-size: 13px; color: var(--gray-500); line-height: 1.7; }
+    .dash-card {
+      background: #fff; border-radius: 14px; padding: 20px;
+      display: flex; flex-direction: column; gap: 10px;
+      border: 1.5px solid var(--gray-200); transition: box-shadow .2s;
+    }
+    .dash-card:hover { box-shadow: 0 6px 22px rgba(0,0,0,.09); }
+    .d-icon {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .d-icon svg { width: 24px; height: 24px; }
+    .d-icon.farmer { background: var(--green-100); color: var(--green-600); border: 1.5px solid var(--green-200); }
+    .d-icon.owner  { background: #dbeafe; color: #2563eb; border: 1.5px solid #bfdbfe; }
+    .d-icon.admin  { background: #ffedd5; color: #ea580c; border: 1.5px solid #fed7aa; }
+    .d-role { font-size: 13px; font-weight: 800; }
+    .d-role.farmer { color: var(--green-700); }
+    .d-role.owner  { color: #1d4ed8; }
+    .d-role.admin  { color: #c2410c; }
+    .d-desc { font-size: 12px; color: var(--gray-500); line-height: 1.65; }
+    .btn-dash {
+      margin-top: 4px; padding: 8px 16px; font-size: 12px; font-weight: 600;
+      border-radius: 7px; align-self: flex-start; background: #fff; transition: background .2s;
+    }
+    .btn-dash.farmer { border: 1.5px solid var(--green-600); color: var(--green-600); }
+    .btn-dash.farmer:hover { background: var(--green-50); }
+    .btn-dash.owner  { border: 1.5px solid #2563eb; color: #2563eb; }
+    .btn-dash.owner:hover  { background: #eff6ff; }
+    .btn-dash.admin  { border: 1.5px solid #ea580c; color: #ea580c; }
+    .btn-dash.admin:hover  { background: #fff7ed; }
+
+    /* ─── FOOTER ────────────────────────────────────────────── */
+    footer { background: var(--green-900); color: #fff; }
+    .footer-grid {
+      max-width: 1200px; margin: 0 auto;
+      padding: 44px 24px 28px;
+      display: grid; grid-template-columns: 1.6fr 1fr 1fr 1.4fr; gap: 32px;
+    }
+    .f-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .f-logo-icon {
+      background: rgba(255,255,255,.18); border-radius: 50%;
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .f-logo-icon svg { width: 18px; height: 18px; }
+    .f-brand { font-size: 16px; font-weight: 800; }
+    .f-tag   { font-size: 10px; color: #86efac; }
+    .footer-col p    { font-size: 12px; color: #86efac; line-height: 1.7; }
+    .footer-col h4   { font-size: 13px; font-weight: 700; color: #d1fae5; margin-bottom: 14px; }
+    .footer-col ul   { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .footer-col ul a { font-size: 12px; color: #86efac; transition: color .2s; }
+    .footer-col ul a:hover { color: #fff; }
+    .f-contact { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+    .f-contact-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #86efac; }
+    .f-contact-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .socials { display: flex; gap: 8px; }
+    .soc-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity .2s;
+    }
+    .soc-btn:hover { opacity: .8; }
+    .soc-btn svg { width: 14px; height: 14px; fill: #fff; }
+    .soc-btn.fb { background: #1877f2; }
+    .soc-btn.tw { background: #1da1f2; }
+    .soc-btn.ig { background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366); }
+    .soc-btn.yt { background: #ff0000; }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,.1);
+      text-align: center; padding: 14px 24px;
+      font-size: 12px; color: #86efac;
+    }
+
+    /* ─── TOAST ─────────────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--green-800); color: #fff;
+      padding: 12px 20px; border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      opacity: 0; transform: translateY(10px);
+      transition: opacity .3s, transform .3s;
+      z-index: 9999; pointer-events: none; max-width: 320px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ─── RESPONSIVE ────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .trust-grid  { grid-template-columns: repeat(2,1fr); }
+      .eq-grid     { grid-template-columns: repeat(2,1fr); }
+      .dash-inner  { grid-template-columns: repeat(2,1fr); }
+      .footer-grid { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 768px) {
+      .nav-links, .nav-actions { display: none; }
+      .hamburger { display: flex; }
+      .hero-content { padding: 48px 24px 80px; }
+      .search-row { flex-direction: column; }
+      .btn-search { width: 100%; justify-content: center; }
+    }
+    @media (max-width: 560px) {
+      .trust-grid  { grid-template-columns: 1fr; }
+      .eq-grid     { grid-template-columns: 1fr; }
+      .dash-inner  { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════ NAVBAR ════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <div class="navbar-inner">
+
+    <a href="#" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="white">
+          <path d="M3 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0zm14 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM5 7h8l3 5H5V7zm13 3l-3-5h1a2 2 0 0 1 2 2v3z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-brand">FarmRent</div>
+        <div class="logo-tag">Farm Equipment Rental System</div>
+      </div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#" class="active">Home</a></li>
+      <li><a href="#equipment">Equipment</a></li>
+      <li><a href="#categories">Categories</a></li>
+      <li><a href="#bookings">Bookings</a></li>
+      <li><a href="#about">About Us</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+    </ul>
+
+    <div class="nav-actions" id="navAuthActions">
+      <a href="login.html" class="btn-login">Login</a>
+      <a href="login.html?tab=register" class="btn-register">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+        Register
+      </a>
+    </div>
+
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#">Home</a>
+    <a href="#equipment">Equipment</a>
+    <a href="#categories">Categories</a>
+    <a href="#bookings">Bookings</a>
+    <a href="#about">About Us</a>
+    <a href="#contact">Contact Us</a>
+    <div class="mobile-btns" id="mobileAuthBtns">
+      <a href="login.html" class="btn-login" style="text-align:center;">Login</a>
+      <a href="login.html?tab=register" class="btn-register" style="text-align:center; justify-content:center;">Register</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════ HERO ════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-text">
+      <h1>Rent Farm<br><span class="green">Equipment Easily</span></h1>
+      <p class="hero-subtitle">Find the best farm equipment for rent from trusted owners near you.</p>
+      <div class="hero-btns">
+        <button class="btn-dark" onclick="document.getElementById('equipment').scrollIntoView({behavior:'smooth'})">
+          Browse Equipment
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+        <button class="btn-outline" onclick="showToast('How It Works guide opening...')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#16a34a" stroke-width="2"/>
+            <polygon points="10,8 16,12 10,16" fill="#16a34a"/>
+          </svg>
+          How It Works
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ SEARCH BAR ════════════════════════ -->
+<div class="search-wrap">
+  <div class="search-card">
+    <div class="search-row">
+
+      <!-- Equipment Name -->
+      <div class="s-field">
+        <svg class="s-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <div style="flex:1">
+          <div class="s-label">Equipment Name</div>
+          <input type="text" id="sName" placeholder="Search equipment..." />
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="s-field">
+        <svg class="s-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <div style="flex:1">
+          <div class="s-label">Category</div>
+          <select id="sCat">
+            <option value="">Select category</option>
+            <option>Tractors</option><option>Harvesters</option>
+            <option>Rotavators</option><option>Seed Drills</option>
+            <option>Ploughs</option><option>Sprayers</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="s-field">
+        <svg class="s-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+        <div style="flex:1">
+          <div class="s-label">Location</div>
+          <input type="text" id="sLoc" placeholder="Enter location" />
+        </div>
+      </div>
+
+      <!-- Rental Date -->
+      <div class="s-field">
+        <svg class="s-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <div style="flex:1">
+          <div class="s-label">Rental Date</div>
+          <input type="date" id="sDate" />
+        </div>
+      </div>
+
+      <button class="btn-search" onclick="handleSearch()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Search Equipment
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ TRUST BADGES ════════════════════════ -->
+<div class="trust-wrap">
+  <div class="trust-grid">
+
+    <div class="trust-card">
+      <div class="t-icon green">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <polyline points="9 12 11 14 15 10"/>
+        </svg>
+      </div>
+      <div><div class="t-title">Secure Payments</div><div class="t-sub">100% secure payment</div></div>
+    </div>
+
+    <div class="trust-card">
+      <div class="t-icon blue">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div><div class="t-title">Instant Booking</div><div class="t-sub">Book in just a few clicks</div></div>
+    </div>
+
+    <div class="trust-card">
+      <div class="t-icon orange">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div><div class="t-title">Verified Owners</div><div class="t-sub">Trusted &amp; verified owners</div></div>
+    </div>
+
+    <div class="trust-card">
+      <div class="t-icon purple">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+          <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+        </svg>
+      </div>
+      <div><div class="t-title">24/7 Support</div><div class="t-sub">We're here to help</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════ FEATURED EQUIPMENT ════════════════════════ -->
+<section class="featured-wrap" id="equipment">
+  <div class="sec-header">
+    <h2 class="sec-title">Featured Equipment</h2>
+    <a href="#" class="view-all">
+      View All
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </a>
+  </div>
+  <div class="eq-grid" id="eqGrid"></div>
+</section>
+
+<!-- ════════════════════════ DASHBOARD SELECTOR ════════════════════════ -->
+<section class="dash-section" id="bookings">
+  <div class="dash-inner">
+
+    <div class="dash-intro">
+      <h2>Choose Your Dashboard</h2>
+      <p>Login to your personalized dashboard and manage everything easily.</p>
+    </div>
+
+    <!-- Farmer -->
+    <div class="dash-card">
+      <div class="d-icon farmer">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="d-role farmer">Farmer</div>
+      <div class="d-desc">Browse equipment, make bookings and manage your rentals.</div>
+      <a href="login.html?role=farmer" class="btn-dash farmer" style="display:inline-block; text-align:center;">Farmer Login</a>
+    </div>
+
+    <!-- Owner -->
+    <div class="dash-card">
+      <div class="d-icon owner">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0zm14 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0z"/>
+          <path d="M5 7h8l3 5H5V7zm13 3l-3-5h1a2 2 0 0 1 2 2v3z"/>
+        </svg>
+      </div>
+      <div class="d-role owner">Equipment Owner</div>
+      <div class="d-desc">List your equipment, manage bookings and track your earnings.</div>
+      <a href="login.html?role=owner" class="btn-dash owner" style="display:inline-block; text-align:center;">Owner Login</a>
+    </div>
+
+    <!-- Admin -->
+    <div class="dash-card">
+      <div class="d-icon admin">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="d-role admin">Admin</div>
+      <div class="d-desc">Manage users, equipment, bookings and monitor the system.</div>
+      <a href="login.html?role=admin" class="btn-dash admin" style="display:inline-block; text-align:center;">Admin Login</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════ FOOTER ════════════════════════ -->
+<footer id="contact">
+  <div class="footer-grid">
+
+    <div class="footer-col">
+      <div class="f-logo">
+        <div class="f-logo-icon">
+          <svg viewBox="0 0 24 24" fill="white" width="18" height="18">
+            <path d="M3 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0zm14 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM5 7h8l3 5H5V7zm13 3l-3-5h1a2 2 0 0 1 2 2v3z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="f-brand">FarmRent</div>
+          <div class="f-tag">Farm Equipment Rental System</div>
+        </div>
+      </div>
+      <p>Connecting farmers with the right equipment.</p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#equipment">Equipment</a></li>
+        <li><a href="#categories">Categories</a></li>
+        <li><a href="#bookings">Bookings</a></li>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Contact Info</h4>
+      <div class="f-contact">
+        <div class="f-contact-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.58 2.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.87-1.87a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          +91 98765 43210
+        </div>
+        <div class="f-contact-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          support@farmrent.com
+        </div>
+        <div class="f-contact-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          Pune, Maharashtra, India
+        </div>
+      </div>
+
+      <h4>Follow Us</h4>
+      <div class="socials" style="margin-top:10px">
+        <a href="#" class="soc-btn fb" aria-label="Facebook">
+          <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <a href="#" class="soc-btn tw" aria-label="Twitter">
+          <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+        </a>
+        <a href="#" class="soc-btn ig" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="white"/></svg>
+        </a>
+        <a href="#" class="soc-btn yt" aria-label="YouTube">
+          <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="red"/></svg>
+        </a>
+      </div>
+    </div>
+
+  </div>
+  <div class="footer-bottom">
+    &copy; <span id="yr"></span> FarmRent. All rights reserved. Made with ❤️ for farmers.
+  </div>
+</footer>
+
+<!-- ════════════════ QUICK BOOK MODAL ════════════════ -->
+<div id="homeBookModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px;">
+  <div style="background:#fff; width:100%; max-width:480px; border-radius:16px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.2); position:relative;">
+    <button onclick="closeHomeBookModal()" style="position:absolute; top:16px; right:16px; background:#f3f4f6; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#4b5563;">✕</button>
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <img id="modalEqImg" src="" style="width:60px; height:50px; object-fit:cover; border-radius:8px;" />
+      <div>
+        <h3 id="modalEqName" style="font-size:16px; font-weight:800; color:#111827;">Book Equipment</h3>
+        <div id="modalEqPrice" style="font-size:12px; color:#16a34a; font-weight:700;">₹2,500 / day</div>
+      </div>
+    </div>
+
+    <form onsubmit="handleHomeBookSubmit(event)">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; color:#4b5563; margin-bottom:4px;">START DATE</label>
+          <input type="date" id="homeBookStart" style="border:1.5px solid #e5e7eb; border-radius:8px; padding:8px; font-size:12px;" onchange="updateModalCalc()" required />
+        </div>
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; color:#4b5563; margin-bottom:4px;">END DATE</label>
+          <input type="date" id="homeBookEnd" style="border:1.5px solid #e5e7eb; border-radius:8px; padding:8px; font-size:12px;" onchange="updateModalCalc()" required />
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:11px; font-weight:700; color:#4b5563; margin-bottom:4px;">DELIVERY LOCATION</label>
+        <input type="text" id="homeBookLoc" placeholder="e.g. Satara District, Maharashtra" style="border:1.5px solid #e5e7eb; border-radius:8px; padding:8px; font-size:12px;" required />
+      </div>
+
+      <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:16px; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Duration:</span>
+          <strong id="modalDuration">1 day(s)</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:800; color:#14532d;">
+          <span>Estimated Total:</span>
+          <span id="modalTotal">₹2,500</span>
+        </div>
+      </div>
+
+      <button type="submit" style="width:100%; padding:11px; background:#16a34a; color:#fff; border-radius:8px; font-weight:700; font-size:13px;">
+        Confirm Booking &amp; Pay on Delivery
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════ JAVASCRIPT ════════════════════════ -->
+<script>
+  /* Year */
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* ── Hamburger ── */
+  document.getElementById('hamburger').addEventListener('click', function () {
+    document.getElementById('mobileMenu').classList.toggle('open');
+  });
+
+  /* ── Navbar scroll shadow ── */
+  window.addEventListener('scroll', function () {
+    document.getElementById('navbar').style.boxShadow =
+      window.scrollY > 10 ? '0 3px 14px rgba(0,0,0,.13)' : '0 1px 3px rgba(0,0,0,.08)';
+  });
+
+  /* ── Toast ── */
+  var toastTimer;
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 3000);
+  }
+
+  /* ── Live Equipment from Storage ── */
+  var equipment = FarmRentAuth.getEquipmentList();
+  var selectedBookingEq = null;
+
+  /* ── Auth State & Navbar Sync ── */
+  function syncAuthNavbar() {
+    var user = FarmRentAuth.getCurrentUser();
+    var navActions = document.getElementById('navAuthActions');
+    var mobileBtns = document.getElementById('mobileAuthBtns');
+
+    if (user) {
+      var userHtml = '<div style="display:flex; align-items:center; gap:8px;">' +
+        '<a href="dashboard.html" style="font-size:13px; font-weight:600; padding:6px 12px; border-radius:6px; background:var(--green-100); color:var(--green-800);">' +
+          (user.avatar || '👨‍🌾') + ' ' + user.name.split(' ')[0] + ' (Dashboard)' +
+        '</a>' +
+        '<button onclick="handleLogout()" style="font-size:12px; font-weight:600; color:#dc2626; background:#fee2e2; padding:6px 10px; border-radius:6px;">' +
+          'Logout' +
+        '</button>' +
+      '</div>';
+
+      navActions.innerHTML = userHtml;
+      mobileBtns.innerHTML = '<a href="dashboard.html" class="btn-login" style="text-align:center;">My Dashboard</a>' +
+        '<button onclick="handleLogout()" class="btn-register" style="text-align:center; justify-content:center; background:#dc2626;">Logout</button>';
+    }
+  }
+
+  function handleLogout() {
+    FarmRentAuth.logout();
+    location.reload();
+  }
+
+  syncAuthNavbar();
+
+  /* ── Favorites Set ── */
+  var favorites = {};
+
+  /* ── Render Equipment Cards ── */
+  function renderCards(list) {
+    var grid = document.getElementById('eqGrid');
+    if (!list || list.length === 0) {
+      grid.innerHTML = '<div class="no-results">😔 No equipment found matching your search. Try different keywords.</div>';
+      return;
+    }
+    grid.innerHTML = list.map(function (eq) {
+      var liked = favorites[eq.id] ? 'liked' : '';
+      return '<div class="eq-card">' +
+        '<div class="eq-img">' +
+          '<img src="' + eq.img + '" alt="' + eq.name + '" loading="lazy" ' +
+            'onerror="this.src=\'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=500&auto=format&fit=crop&q=80\'" />' +
+          '<button class="heart-btn ' + liked + '" id="heart-' + eq.id + '" ' +
+            'onclick="toggleFav(' + eq.id + ',\'' + eq.name.replace(/'/g, "\\'") + '\')" aria-label="Favorite">' +
+            '<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<div class="eq-body">' +
+          '<div class="eq-name">' + eq.name + '</div>' +
+          '<div class="eq-cat">' +
+            '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+            eq.category + (eq.hp ? ' (' + eq.hp + ')' : '') +
+          '</div>' +
+          '<div class="eq-meta">' +
+            '<div class="eq-price">₹' + Number(eq.price).toLocaleString() + ' <small>/ ' + eq.unit + '</small></div>' +
+            '<span class="badge-avail">' + eq.status + '</span>' +
+          '</div>' +
+          '<button class="btn-book" onclick="openHomeBookModal(' + eq.id + ')">' +
+            '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' +
+            'Book Now' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  renderCards(equipment);
+
+  /* ── Booking Modal Flow ── */
+  function openHomeBookModal(eqId) {
+    var user = FarmRentAuth.getCurrentUser();
+    if (!user) {
+      showToast('Please log in or register to book equipment.');
+      setTimeout(function () {
+        window.location.href = 'login.html?role=farmer';
+      }, 1500);
+      return;
+    }
+
+    selectedBookingEq = equipment.find(function(e){ return e.id === Number(eqId); });
+    if (!selectedBookingEq) return;
+
+    document.getElementById('modalEqImg').src = selectedBookingEq.img;
+    document.getElementById('modalEqName').textContent = selectedBookingEq.name;
+    document.getElementById('modalEqPrice').textContent = '₹' + Number(selectedBookingEq.price).toLocaleString() + ' / ' + selectedBookingEq.unit;
+
+    var today = new Date().toISOString().split('T')[0];
+    var tmrw = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    document.getElementById('homeBookStart').value = today;
+    document.getElementById('homeBookEnd').value = tmrw;
+    document.getElementById('homeBookLoc').value = user.location || 'Pune, Maharashtra';
+
+    updateModalCalc();
+    document.getElementById('homeBookModal').style.display = 'flex';
+  }
+
+  function closeHomeBookModal() {
+    document.getElementById('homeBookModal').style.display = 'none';
+  }
+
+  function updateModalCalc() {
+    if (!selectedBookingEq) return;
+    var sDate = new Date(document.getElementById('homeBookStart').value);
+    var eDate = new Date(document.getElementById('homeBookEnd').value);
+
+    var diff = Math.max(1, (eDate - sDate) / (1000 * 60 * 60 * 24));
+    var days = isNaN(diff) ? 1 : Math.max(1, Math.round(diff));
+    var total = Number(selectedBookingEq.price) * days;
+
+    document.getElementById('modalDuration').textContent = days + ' day(s)';
+    document.getElementById('modalTotal').textContent = '₹' + total.toLocaleString();
+  }
+
+  function handleHomeBookSubmit(e) {
+    e.preventDefault();
+    var user = FarmRentAuth.getCurrentUser();
+    var sDate = document.getElementById('homeBookStart').value;
+    var eDate = document.getElementById('homeBookEnd').value;
+    var loc = document.getElementById('homeBookLoc').value;
+
+    var diff = Math.max(1, (new Date(eDate) - new Date(sDate)) / (1000 * 60 * 60 * 24));
+    var days = isNaN(diff) ? 1 : Math.max(1, Math.round(diff));
+
+    var booking = FarmRentAuth.createBooking({
+      equipmentId: selectedBookingEq.id,
+      equipmentName: selectedBookingEq.name,
+      equipmentImg: selectedBookingEq.img,
+      farmerId: user.id,
+      farmerName: user.name,
+      farmerPhone: user.mobile,
+      ownerId: selectedBookingEq.ownerId,
+      ownerName: selectedBookingEq.ownerName,
+      startDate: sDate,
+      endDate: eDate,
+      days: days,
+      dailyRate: selectedBookingEq.price,
+      location: loc
+    });
+
+    closeHomeBookModal();
+    showToast('Booking ' + booking.id + ' confirmed! Redirecting to Dashboard...');
+    setTimeout(function () {
+      window.location.href = 'dashboard.html';
+    }, 1500);
+  }
+
+  /* ── Toggle Favorite ── */
+  function toggleFav(id, name) {
+    var btn = document.getElementById('heart-' + id);
+    if (favorites[id]) {
+      delete favorites[id];
+      btn.classList.remove('liked');
+      showToast('Removed "' + name + '" from favorites');
+    } else {
+      favorites[id] = true;
+      btn.classList.add('liked');
+      showToast('Added "' + name + '" to favorites ❤️');
+    }
+  }
+
+  /* ── Search ── */
+  function handleSearch() {
+    var name = document.getElementById('sName').value.toLowerCase().trim();
+    var cat  = document.getElementById('sCat').value.toLowerCase().trim();
+    var loc  = document.getElementById('sLoc').value.trim();
+
+    var filtered = equipment.filter(function (eq) {
+      var matchName = !name || eq.name.toLowerCase().includes(name);
+      var matchCat  = !cat  || eq.category.toLowerCase().includes(cat.replace('s',''));
+      return matchName && matchCat;
+    });
+
+    renderCards(filtered);
+    document.getElementById('equipment').scrollIntoView({ behavior: 'smooth' });
+
+    var msg = 'Found ' + filtered.length + ' result(s)';
+    if (loc) msg += ' near ' + loc;
+    showToast(msg);
+  }
+
+  /* Enter key triggers search */
+  ['sName','sLoc'].forEach(function (id) {
+    document.getElementById(id).addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') handleSearch();
+    });
+  });
+</script>
+</body>
+</html>

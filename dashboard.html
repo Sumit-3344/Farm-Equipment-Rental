@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FarmRent — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="auth.js"></script>
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-50:  #f0fdf4;
+      --green-100: #dcfce7;
+      --green-200: #bbf7d0;
+      --green-600: #16a34a;
+      --green-700: #15803d;
+      --green-800: #166534;
+      --green-900: #14532d;
+      --blue-50:   #eff6ff;
+      --blue-100:  #dbeafe;
+      --blue-600:  #2563eb;
+      --blue-700:  #1d4ed8;
+      --orange-50: #fff7ed;
+      --orange-100:#ffedd5;
+      --orange-600:#ea580c;
+      --orange-700:#c2410c;
+      --gray-50:   #f9fafb;
+      --gray-100:  #f3f4f6;
+      --gray-200:  #e5e7eb;
+      --gray-300:  #d1d5db;
+      --gray-400:  #9ca3af;
+      --gray-500:  #6b7280;
+      --gray-600:  #4b5563;
+      --gray-700:  #374151;
+      --gray-800:  #1f2937;
+      --gray-900:  #111827;
+
+      --theme-primary: var(--green-600);
+      --theme-hover: var(--green-700);
+      --theme-light: var(--green-50);
+      --theme-badge-bg: var(--green-100);
+      --theme-badge-text: var(--green-800);
+      --theme-border: var(--green-200);
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--gray-900);
+      background: var(--gray-50);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; border: none; outline: none; }
+    input, select, textarea { font-family: inherit; border: none; outline: none; background: transparent; width: 100%; }
+    img { display: block; max-width: 100%; }
+
+    /* ─── Topbar ────────────────────────────────────────────── */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      background: var(--theme-primary);
+      color: #fff;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+    }
+    .brand-icon svg { width: 20px; height: 20px; }
+    .brand-text { font-size: 18px; font-weight: 800; color: var(--gray-900); }
+    .role-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--theme-badge-bg);
+      color: var(--theme-badge-text);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .btn-nav-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-600);
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all .2s;
+    }
+    .btn-nav-link:hover { color: var(--gray-900); background: var(--gray-100); }
+    .user-profile-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 30px;
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .user-avatar-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .btn-logout {
+      font-size: 12px;
+      font-weight: 600;
+      color: #dc2626;
+      background: #fee2e2;
+      padding: 6px 12px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background .2s;
+    }
+    .btn-logout:hover { background: #fecaca; }
+
+    /* ─── Dashboard Container ───────────────────────────────── */
+    .dash-container {
+      max-width: 1280px;
+      margin: 24px auto;
+      padding: 0 24px 60px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* ─── Welcome Header ────────────────────────────────────── */
+    .welcome-header {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 16px;
+      padding: 24px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .welcome-title { font-size: 22px; font-weight: 800; color: var(--gray-900); }
+    .welcome-sub { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-primary {
+      padding: 10px 18px;
+      background: var(--theme-primary);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: all .2s;
+    }
+    .btn-primary:hover {
+      background: var(--theme-hover);
+      transform: translateY(-1px);
+    }
+
+    /* ─── Stat Cards Grid ───────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .dash-stat-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .dash-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,.08);
+    }
+    .stat-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .stat-icon-wrap svg { width: 24px; height: 24px; }
+    .stat-val { font-size: 22px; font-weight: 800; color: var(--gray-900); }
+    .stat-lbl { font-size: 12px; font-weight: 500; color: var(--gray-500); margin-top: 2px; }
+
+    /* ─── Role Switcher Bar ─────────────────────────────────── */
+    .role-switcher-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--gray-200);
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+    .btn-switch-chip {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--gray-100);
+      color: var(--gray-700);
+      transition: all .2s;
+    }
+    .btn-switch-chip:hover { background: var(--gray-200); color: var(--gray-900); }
+    .btn-switch-chip.active {
+      background: var(--theme-primary);
+      color: #fff;
+    }
+
+    /* ─── Main Section Panels ───────────────────────────────── */
+    .section-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .section-title { font-size: 17px; font-weight: 800; color: var(--gray-900); }
+
+    /* ─── Data Tables ───────────────────────────────────────── */
+    .table-responsive {
+      overflow-x: auto;
+      width: 100%;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    table.data-table th {
+      background: var(--gray-50);
+      color: var(--gray-600);
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    table.data-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: middle;
+    }
+    table.data-table tr:hover td { background: var(--gray-50); }
+
+    /* Status Badges */
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .badge-confirmed { background: var(--green-100); color: var(--green-700); }
+    .badge-completed { background: #dbeafe; color: #1e40af; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-cancelled { background: #fee2e2; color: #991b1b; }
+    .badge-available { background: var(--green-100); color: var(--green-700); }
+    .badge-maintenance { background: #ffedd5; color: #c2410c; }
+
+    /* Action Buttons in Tables */
+    .btn-sm-action {
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all .2s;
+    }
+    .btn-receipt { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-300); }
+    .btn-receipt:hover { background: var(--gray-200); color: var(--gray-900); }
+    .btn-accept { background: var(--green-600); color: #fff; }
+    .btn-accept:hover { background: var(--green-700); }
+    .btn-reject { background: #ef4444; color: #fff; }
+    .btn-reject:hover { background: #dc2626; }
+    .btn-cancel { color: #dc2626; background: #fee2e2; }
+    .btn-cancel:hover { background: #fecaca; }
+
+    /* ─── Equipment Cards Grid (Owner & Browse) ─────────────── */
+    .eq-manage-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .eq-manage-card {
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+    .eq-manage-img {
+      height: 160px;
+      width: 100%;
+      object-fit: cover;
+    }
+    .eq-manage-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .eq-manage-name { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+    .eq-manage-meta { font-size: 12px; color: var(--gray-500); margin: 6px 0 12px; }
+    .eq-manage-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--gray-100);
+      padding-top: 12px;
+    }
+
+    /* ─── Modals ────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: #fff;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: var(--gray-100);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-600);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 5px; }
+    .form-input {
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+      background: #fff;
+    }
+    .form-input:focus { border-color: var(--theme-primary); }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ─── Invoice Slip Styling ──────────────────────────────── */
+    .invoice-card {
+      background: #fff;
+      border: 1.5px dashed var(--gray-300);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .invoice-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 6px 0;
+    }
+    .invoice-total {
+      border-top: 2px solid var(--gray-800);
+      padding-top: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    /* ─── Toast ─────────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: var(--gray-900);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity .3s, transform .3s;
+      z-index: 9999;
+      pointer-events: none;
+      max-width: 360px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: var(--green-800); }
+    .toast.error { background: #b91c1c; }
+    .toast.info { background: #1e40af; }
+
+    /* ─── Responsive ────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .eq-manage-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .eq-manage-grid { grid-template-columns: 1fr; }
+      .welcome-header { flex-direction: column; align-items: flex-start; }
+      .header-actions { width: 100%; }
+      .btn-primary { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════ TOPBAR ════════════════ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-group">
+      <a href="index.html" class="brand-icon" id="topBrandIcon">
+        <svg viewBox="0 0 24 24" fill="white">
+          <path d="M3 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0zm14 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM5 7h8l3 5H5V7zm13 3l-3-5h1a2 2 0 0 1 2 2v3z"/>
+        </svg>
+      </a>
+      <div>
+        <div class="brand-text">FarmRent</div>
+      </div>
+      <span class="role-badge" id="topRoleBadge">👨‍🌾 Farmer</span>
+    </div>
+
+    <div class="topbar-actions">
+      <a href="index.html" class="btn-nav-link">Home Catalog</a>
+      <div class="user-profile-chip">
+        <div class="user-avatar-circle" id="userAvatar">👨‍🌾</div>
+        <span id="userNameDisplay">Ramesh Patil</span>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Logout
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════ DASHBOARD MAIN ════════════════ -->
+<main class="dash-container">
+
+  <!-- Welcome Header -->
+  <div class="welcome-header">
+    <div>
+      <h1 class="welcome-title" id="welcomeTitle">Welcome back, Ramesh Patil!</h1>
+      <p class="welcome-sub" id="welcomeSub">Manage your active farm rentals, bookings, and payments seamlessly.</p>
+    </div>
+    <div class="header-actions" id="headerActions">
+      <!-- Dynamic Buttons (e.g. Book Equipment / Add Equipment) -->
+    </div>
+  </div>
+
+  <!-- Stat Cards Grid -->
+  <div class="stats-grid" id="statsGrid">
+    <!-- Rendered dynamically by role -->
+  </div>
+
+  <!-- ──────────────── VIEW: FARMER DASHBOARD ──────────────── -->
+  <div id="farmerView" style="display: none;">
+    <!-- Active Bookings -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">My Equipment Bookings</h2>
+        <button class="btn-primary" onclick="openNewBookingModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Rent Equipment Now
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Equipment</th>
+              <th>Owner</th>
+              <th>Rental Dates</th>
+              <th>Total Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="farmerBookingsTableBody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──────────────── VIEW: OWNER DASHBOARD ──────────────── -->
+  <div id="ownerView" style="display: none;">
+    <!-- Equipment Inventory -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">My Equipment Inventory</h2>
+        <button class="btn-primary" onclick="openAddEquipmentModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add New Machinery
+        </button>
+      </div>
+      <div class="eq-manage-grid" id="ownerEquipmentGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Incoming Hire Requests -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">Incoming Booking Requests &amp; Rental Orders</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Equipment</th>
+              <th>Renter (Farmer)</th>
+              <th>Dates &amp; Duration</th>
+              <th>Revenue (₹)</th>
+              <th>Current Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="ownerRequestsTableBody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──────────────── VIEW: ADMIN DASHBOARD ──────────────── -->
+  <div id="adminView" style="display: none;">
+    <!-- Platform Users Management -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">Platform Users Directory (Farmers &amp; Equipment Owners)</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Name &amp; Role</th>
+              <th>Contact Email</th>
+              <th>Mobile</th>
+              <th>Location</th>
+              <th>Account Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="adminUsersTableBody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- All Platform Rentals Audit -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">Global Platform Rentals &amp; Transactions Audit</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Equipment</th>
+              <th>Farmer</th>
+              <th>Owner</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Payment</th>
+            </tr>
+          </thead>
+          <tbody id="adminBookingsTableBody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ════════════════ MODAL: ADD EQUIPMENT (OWNER) ════════════════ -->
+<div class="modal-overlay" id="addEquipmentModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('addEquipmentModal')">✕</button>
+    <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 4px;">List New Equipment</h3>
+    <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 18px;">
+      List your tractor, harvester, or implement to start receiving rental requests.
+    </p>
+
+    <form onsubmit="handleAddEquipmentSubmit(event)">
+      <div class="form-group">
+        <label class="form-label">Equipment Model / Name</label>
+        <input type="text" id="eqNewName" class="form-input" placeholder="e.g. Mahindra 575 DI Sarpanch" required />
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="eqNewCategory" class="form-input" required>
+            <option>Tractor</option>
+            <option>Harvester</option>
+            <option>Rotavator</option>
+            <option>Seed Drill</option>
+            <option>Plough</option>
+            <option>Sprayer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horsepower / Spec</label>
+          <input type="text" id="eqNewHp" class="form-input" placeholder="e.g. 45 HP" required />
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Daily Rental Rate (₹ / Day)</label>
+          <input type="number" id="eqNewPrice" class="form-input" placeholder="e.g. 2200" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input type="text" id="eqNewLocation" class="form-input" placeholder="e.g. Pune, Maharashtra" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Equipment Photo URL</label>
+        <input type="url" id="eqNewImg" class="form-input" placeholder="https://images.unsplash.com/..." value="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop&q=80" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description / Working Condition</label>
+        <textarea id="eqNewDesc" class="form-input" rows="2" placeholder="Describe equipment features, driver availability, attachments included..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 12px;">
+        Publish Equipment Listing
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════════ MODAL: QUICK BOOK (FARMER) ════════════════ -->
+<div class="modal-overlay" id="bookModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('bookModal')">✕</button>
+    <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 4px;">Book Farm Equipment</h3>
+    <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 18px;">
+      Select equipment and your required rental duration.
+    </p>
+
+    <form onsubmit="handleBookSubmit(event)">
+      <div class="form-group">
+        <label class="form-label">Select Equipment</label>
+        <select id="bookEqSelect" class="form-input" onchange="calculateBookingTotal()" required></select>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input type="date" id="bookStartDate" class="form-input" onchange="calculateBookingTotal()" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date</label>
+          <input type="date" id="bookEndDate" class="form-input" onchange="calculateBookingTotal()" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Delivery / Farm Location</label>
+        <input type="text" id="bookLocation" class="form-input" placeholder="e.g. Village Khandala, Satara" required />
+      </div>
+
+      <!-- Cost Calculation summary -->
+      <div class="invoice-card" style="margin: 12px 0;">
+        <div class="invoice-row">
+          <span>Daily Rental Rate:</span>
+          <strong id="bookRateDisplay">₹2,500 / day</strong>
+        </div>
+        <div class="invoice-row">
+          <span>Duration:</span>
+          <strong id="bookDaysDisplay">1 day(s)</strong>
+        </div>
+        <div class="invoice-row">
+          <span>Delivery &amp; Support:</span>
+          <strong style="color: var(--green-600);">Free Included</strong>
+        </div>
+        <div class="invoice-row invoice-total">
+          <span>Estimated Total:</span>
+          <span id="bookTotalDisplay" style="color: var(--green-700);">₹2,500</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+        Confirm &amp; Instant Book
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════════ MODAL: INVOICE / RECEIPT ════════════════ -->
+<div class="modal-overlay" id="receiptModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('receiptModal')">✕</button>
+    <div style="text-align: center; margin-bottom: 16px;">
+      <div style="display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:20px; color:var(--green-700);">
+        🌱 FarmRent Receipt
+      </div>
+      <div style="font-size: 11px; color: var(--gray-500);">Official Equipment Rental Tax Invoice</div>
+    </div>
+
+    <div id="receiptContent"></div>
+
+    <button type="button" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 12px;" onclick="printReceipt()">
+      🖨️ Download / Print Receipt
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════ JAVASCRIPT LOGIC ════════════════ -->
+<script>
+  var currentUser = null;
+  var currentRole = 'farmer';
+
+  window.addEventListener('DOMContentLoaded', function () {
+    // Check if user is logged in
+    currentUser = FarmRentAuth.getCurrentUser();
+    
+    if (!currentUser) {
+      // If not logged in, redirect strictly to login.html
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // Strict role check: enforce the logged-in user's actual role.
+    // If a different role parameter is in the URL, redirect to load the correct role view.
+    var urlParams = new URLSearchParams(window.location.search);
+    var roleParam = urlParams.get('role');
+    if (roleParam !== currentUser.role) {
+      window.location.href = 'dashboard.html?role=' + currentUser.role;
+      return;
+    }
+
+    renderDashboard();
+  });
+
+  function renderDashboard() {
+    currentRole = currentUser.role;
+
+    // Set Theme colors
+    var themePrimary = currentRole === 'owner' ? '#2563eb' : currentRole === 'admin' ? '#ea580c' : '#16a34a';
+    var themeHover = currentRole === 'owner' ? '#1d4ed8' : currentRole === 'admin' ? '#c2410c' : '#15803d';
+    var themeBadgeBg = currentRole === 'owner' ? '#dbeafe' : currentRole === 'admin' ? '#ffedd5' : '#dcfce7';
+    var themeBadgeText = currentRole === 'owner' ? '#1e40af' : currentRole === 'admin' ? '#9a3412' : '#166534';
+
+    document.documentElement.style.setProperty('--theme-primary', themePrimary);
+    document.documentElement.style.setProperty('--theme-hover', themeHover);
+    document.documentElement.style.setProperty('--theme-badge-bg', themeBadgeBg);
+    document.documentElement.style.setProperty('--theme-badge-text', themeBadgeText);
+
+    // Update Topbar
+    document.getElementById('userAvatar').textContent = currentUser.avatar || (currentRole === 'owner' ? '🚜' : currentRole === 'admin' ? '🛡️' : '👨‍🌾');
+    document.getElementById('userNameDisplay').textContent = currentUser.name;
+    document.getElementById('topRoleBadge').textContent = (currentRole === 'owner' ? '🚜 Owner' : currentRole === 'admin' ? '🛡️ Admin' : '👨‍🌾 Farmer');
+
+    // Update Welcome Title & Sub
+    document.getElementById('welcomeTitle').textContent = 'Welcome back, ' + currentUser.name + '!';
+    
+    // Hide all views first
+    document.getElementById('farmerView').style.display = 'none';
+    document.getElementById('ownerView').style.display = 'none';
+    document.getElementById('adminView').style.display = 'none';
+
+    if (currentRole === 'farmer') {
+      document.getElementById('welcomeSub').textContent = 'Manage your agricultural rentals, track active machinery, and book new equipment.';
+      document.getElementById('farmerView').style.display = 'block';
+      renderFarmerStats();
+      renderFarmerBookings();
+    } else if (currentRole === 'owner') {
+      document.getElementById('welcomeSub').textContent = 'Monitor your equipment fleet, manage rental requests, and track your seasonal earnings.';
+      document.getElementById('ownerView').style.display = 'block';
+      renderOwnerStats();
+      renderOwnerEquipment();
+      renderOwnerRequests();
+    } else if (currentRole === 'admin') {
+      document.getElementById('welcomeSub').textContent = 'System Administration: Manage user permissions, oversee equipment KYC, and audit ledger.';
+      document.getElementById('adminView').style.display = 'block';
+      renderAdminStats();
+      renderAdminUsers();
+      renderAdminBookings();
+    }
+  }
+
+  /* ─── Farmer Logic ────────────────────────────── */
+  function renderFarmerStats() {
+    var bookings = FarmRentAuth.getBookings().filter(function(b){ return b.farmerId === currentUser.id; });
+    var activeBookings = bookings.filter(function(b){ return b.status === 'Confirmed'; });
+    var totalSpent = bookings.reduce(function(acc, b){ return acc + (b.totalAmount || 0); }, 0);
+    var savedAmount = Math.round(totalSpent * 0.4);
+
+    var grid = document.getElementById('statsGrid');
+    grid.innerHTML = 
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: var(--green-100); color: var(--green-600);">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">' + bookings.length + '</div><div class="stat-lbl">Total Bookings</div></div>' +
+      '</div>' +
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: #dbeafe; color: #2563eb;">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">' + activeBookings.length + '</div><div class="stat-lbl">Active on Field</div></div>' +
+      '</div>' +
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: #ffedd5; color: #ea580c;">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="12" x2="18" y2="12"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">₹' + totalSpent.toLocaleString() + '</div><div class="stat-lbl">Total Spent</div></div>' +
+      '</div>' +
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: #ede9fe; color: #7c3aed;">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">₹' + savedAmount.toLocaleString() + '</div><div class="stat-lbl">Saved vs Buying</div></div>' +
+      '</div>';
+  }
+
+  function renderFarmerBookings() {
+    var bookings = FarmRentAuth.getBookings().filter(function(b){ return b.farmerId === currentUser.id; });
+    var tbody = document.getElementById('farmerBookingsTableBody');
+
+    if (bookings.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--gray-500);">No equipment bookings yet. Click "Rent Equipment Now" to start.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = bookings.map(function (b) {
+      var badgeClass = b.status === 'Confirmed' ? 'badge-confirmed' : b.status === 'Completed' ? 'badge-completed' : b.status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
+      return '<tr>' +
+        '<td><strong>' + b.id + '</strong></td>' +
+        '<td>' +
+          '<div style="display:flex; align-items:center; gap:10px;">' +
+            '<img src="' + b.equipmentImg + '" style="width:40px; height:32px; object-fit:cover; border-radius:6px;" />' +
+            '<span>' + b.equipmentName + '</span>' +
+          '</div>' +
+        '</td>' +
+        '<td>' + b.ownerName + '</td>' +
+        '<td>' + b.startDate + ' to ' + b.endDate + ' (' + b.days + 'd)</td>' +
+        '<td><strong>₹' + (b.totalAmount || 0).toLocaleString() + '</strong></td>' +
+        '<td><span class="badge ' + badgeClass + '">' + b.status + '</span></td>' +
+        '<td>' +
+          '<button class="btn-sm-action btn-receipt" onclick="viewReceipt(\'' + b.id + '\')">📄 Receipt</button> ' +
+          (b.status === 'Confirmed' ? '<button class="btn-sm-action btn-cancel" onclick="cancelBooking(\'' + b.id + '\')">Cancel</button>' : '') +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  /* ─── Owner Logic ────────────────────────────── */
+  function renderOwnerStats() {
+    var myEquipment = FarmRentAuth.getEquipmentList().filter(function(e) { return e.ownerId === currentUser.id; });
+    var myBookings = FarmRentAuth.getBookings().filter(function(b) { return b.ownerId === currentUser.id; });
+    var totalEarnings = myBookings.filter(function(b){ return b.status !== 'Cancelled'; }).reduce(function(acc, b){ return acc + (b.totalAmount || 0); }, 0);
+
+    var grid = document.getElementById('statsGrid');
+    grid.innerHTML = 
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: #dbeafe; color: #2563eb;">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">' + myEquipment.length + '</div><div class="stat-lbl">Fleet Machines</div></div>' +
+      '</div>' +
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: var(--green-100); color: var(--green-600);">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">₹' + totalEarnings.toLocaleString() + '</div><div class="stat-lbl">Total Earnings</div></div>' +
+      '</div>' +
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: #ffedd5; color: #ea580c;">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">' + myBookings.length + '</div><div class="stat-lbl">Rental Requests</div></div>' +
+      '</div>' +
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: #ede9fe; color: #7c3aed;">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">4.9 ★</div><div class="stat-lbl">Owner Rating</div></div>' +
+      '</div>';
+  }
+
+  function renderOwnerEquipment() {
+    var equipment = FarmRentAuth.getEquipmentList().filter(function(e) { return e.ownerId === currentUser.id; });
+    var grid = document.getElementById('ownerEquipmentGrid');
+
+    if (equipment.length === 0) {
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:32px; color:var(--gray-500);">No equipment listed yet. Click "Add New Machinery" to publish your first tractor!</div>';
+      return;
+    }
+
+    grid.innerHTML = equipment.map(function (eq) {
+      var isAvail = eq.status === 'Available';
+      return '<div class="eq-manage-card">' +
+        '<img src="' + eq.img + '" class="eq-manage-img" onerror="this.src=\'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop&q=80\'" />' +
+        '<div class="eq-manage-body">' +
+          '<div>' +
+             '<div class="eq-manage-name">' + eq.name + '</div>' +
+             '<div class="eq-manage-meta">' + eq.category + ' • ' + (eq.hp || 'Standard') + ' • ' + (eq.location || 'Pune') + '</div>' +
+          '</div>' +
+          '<div class="eq-manage-footer">' +
+            '<div><strong>₹' + Number(eq.price).toLocaleString() + '</strong> <small>/ ' + eq.unit + '</small></div>' +
+            '<div style="display:flex; gap:6px;">' +
+              '<button class="btn-sm-action ' + (isAvail ? 'badge-available' : 'badge-maintenance') + '" onclick="toggleEquipmentAvail(' + eq.id + ')">' +
+                (isAvail ? '🟢 Available' : '🟠 In Repair') +
+              '</button>' +
+              '<button class="btn-sm-action btn-cancel" onclick="deleteEquipmentItem(' + eq.id + ')">🗑️</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderOwnerRequests() {
+    var bookings = FarmRentAuth.getBookings().filter(function(b) { return b.ownerId === currentUser.id; });
+    var tbody = document.getElementById('ownerRequestsTableBody');
+
+    if (bookings.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--gray-500);">No rental requests yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = bookings.map(function (b) {
+      var badgeClass = b.status === 'Confirmed' ? 'badge-confirmed' : b.status === 'Completed' ? 'badge-completed' : b.status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
+      return '<tr>' +
+        '<td><strong>' + b.id + '</strong></td>' +
+        '<td>' + b.equipmentName + '</td>' +
+        '<td>' + (b.farmerName || 'Farmer') + ' (' + (b.farmerPhone || '9876543210') + ')</td>' +
+        '<td>' + b.startDate + ' to ' + b.endDate + '</td>' +
+        '<td><strong>₹' + (b.totalAmount || 0).toLocaleString() + '</strong></td>' +
+        '<td><span class="badge ' + badgeClass + '">' + b.status + '</span></td>' +
+        '<td>' +
+          (b.status === 'Pending' ? 
+            '<button class="btn-sm-action btn-accept" onclick="updateStatus(\'' + b.id + '\', \'Confirmed\')">Accept</button> ' +
+            '<button class="btn-sm-action btn-reject" onclick="updateStatus(\'' + b.id + '\', \'Cancelled\')">Reject</button>' :
+            '<button class="btn-sm-action btn-receipt" onclick="viewReceipt(\'' + b.id + '\')">Invoice</button>'
+          ) +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  /* ─── Admin Logic ────────────────────────────── */
+  function renderAdminStats() {
+    var users = FarmRentAuth.getUsersList();
+    var equipment = FarmRentAuth.getEquipmentList();
+    var bookings = FarmRentAuth.getBookings();
+    var totalVolume = bookings.reduce(function(acc, b){ return acc + (b.totalAmount || 0); }, 0);
+
+    var grid = document.getElementById('statsGrid');
+    grid.innerHTML = 
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: #ffedd5; color: #ea580c;">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">' + users.length + '</div><div class="stat-lbl">Platform Users</div></div>' +
+      '</div>' +
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: #dbeafe; color: #2563eb;">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">' + equipment.length + '</div><div class="stat-lbl">Active Machinery</div></div>' +
+      '</div>' +
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: var(--green-100); color: var(--green-600);">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">' + bookings.length + '</div><div class="stat-lbl">Total Transactions</div></div>' +
+      '</div>' +
+      '<div class="dash-stat-card">' +
+        '<div class="stat-icon-wrap" style="background: #ede9fe; color: #7c3aed;">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>' +
+        '</div>' +
+        '<div><div class="stat-val">₹' + totalVolume.toLocaleString() + '</div><div class="stat-lbl">Total Volume</div></div>' +
+      '</div>';
+  }
+
+  function renderAdminUsers() {
+    var users = FarmRentAuth.getUsersList();
+    var tbody = document.getElementById('adminUsersTableBody');
+
+    tbody.innerHTML = users.map(function(u){
+      var isAct = u.status === 'active';
+      return '<tr>' +
+        '<td><strong>' + u.id + '</strong></td>' +
+        '<td>' + (u.avatar || '👤') + ' <strong>' + u.name + '</strong> (' + u.role.toUpperCase() + ')</td>' +
+        '<td>' + u.email + '</td>' +
+        '<td>+91 ' + u.mobile + '</td>' +
+        '<td>' + (u.location || 'Pune') + '</td>' +
+        '<td><span class="badge ' + (isAct ? 'badge-confirmed' : 'badge-cancelled') + '">' + u.status.toUpperCase() + '</span></td>' +
+        '<td>' +
+          '<button class="btn-sm-action ' + (isAct ? 'btn-cancel' : 'btn-accept') + '" onclick="toggleUserActivation(\'' + u.id + '\')">' +
+            (isAct ? 'Suspend' : 'Activate') +
+          '</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function renderAdminBookings() {
+    var bookings = FarmRentAuth.getBookings();
+    var tbody = document.getElementById('adminBookingsTableBody');
+
+    tbody.innerHTML = bookings.map(function(b){
+      return '<tr>' +
+        '<td><strong>' + b.id + '</strong></td>' +
+        '<td>' + b.equipmentName + '</td>' +
+        '<td>' + b.farmerName + '</td>' +
+        '<td>' + b.ownerName + '</td>' +
+        '<td><strong>₹' + (b.totalAmount || 0).toLocaleString() + '</strong></td>' +
+        '<td><span class="badge badge-confirmed">' + b.status + '</span></td>' +
+        '<td><span style="color:var(--green-600); font-weight:700;">' + (b.paymentStatus || 'Paid') + '</span></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  /* ─── Actions & Handlers ────────────────────────────── */
+  function openAddEquipmentModal() {
+    document.getElementById('addEquipmentModal').classList.add('open');
+  }
+
+  function openNewBookingModal() {
+    var select = document.getElementById('bookEqSelect');
+    var eqList = FarmRentAuth.getEquipmentList();
+
+    select.innerHTML = eqList.map(function(e){
+      return '<option value="' + e.id + '" data-price="' + e.price + '" data-name="' + e.name + '" data-img="' + e.img + '" data-owner="' + e.ownerName + '" data-ownerid="' + e.ownerId + '">' +
+        e.name + ' — ₹' + Number(e.price).toLocaleString() + '/day (' + e.location + ')' +
+      '</option>';
+    }).join('');
+
+    // Default dates
+    var today = new Date().toISOString().split('T')[0];
+    var tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    document.getElementById('bookStartDate').value = today;
+    document.getElementById('bookEndDate').value = tomorrow;
+    document.getElementById('bookLocation').value = currentUser.location || 'Pune, Maharashtra';
+
+    calculateBookingTotal();
+    document.getElementById('bookModal').classList.add('open');
+  }
+
+  function calculateBookingTotal() {
+    var select = document.getElementById('bookEqSelect');
+    if (!select.options.length) return;
+
+    var opt = select.options[select.selectedIndex];
+    var rate = Number(opt.getAttribute('data-price')) || 2500;
+
+    var sDate = new Date(document.getElementById('bookStartDate').value);
+    var eDate = new Date(document.getElementById('bookEndDate').value);
+
+    var diffTime = Math.max(1, (eDate - sDate) / (1000 * 60 * 60 * 24));
+    var days = isNaN(diffTime) ? 1 : Math.max(1, Math.round(diffTime));
+
+    var total = rate * days;
+
+    document.getElementById('bookRateDisplay').textContent = '₹' + rate.toLocaleString() + ' / day';
+    document.getElementById('bookDaysDisplay').textContent = days + ' day(s)';
+    document.getElementById('bookTotalDisplay').textContent = '₹' + total.toLocaleString();
+  }
+
+  function handleAddEquipmentSubmit(e) {
+    e.preventDefault();
+    var name = document.getElementById('eqNewName').value.trim();
+    var cat = document.getElementById('eqNewCategory').value;
+    var hp = document.getElementById('eqNewHp').value.trim();
+    var price = document.getElementById('eqNewPrice').value;
+    var loc = document.getElementById('eqNewLocation').value.trim();
+    var img = document.getElementById('eqNewImg').value.trim();
+    var desc = document.getElementById('eqNewDesc').value.trim();
+
+    FarmRentAuth.addEquipment({
+      name: name,
+      category: cat,
+      hp: hp,
+      price: price,
+      location: loc,
+      img: img,
+      description: desc,
+      ownerId: currentUser.id,
+      ownerName: currentUser.name,
+      ownerPhone: currentUser.mobile
+    });
+
+    closeModal('addEquipmentModal');
+    renderDashboard();
+    showToast('Equipment "' + name + '" successfully listed!', 'success');
+  }
+
+  function handleBookSubmit(e) {
+    e.preventDefault();
+    var select = document.getElementById('bookEqSelect');
+    var opt = select.options[select.selectedIndex];
+
+    var eqId = Number(opt.value);
+    var eqName = opt.getAttribute('data-name');
+    var eqImg = opt.getAttribute('data-img');
+    var eqOwner = opt.getAttribute('data-owner');
+    var eqOwnerId = opt.getAttribute('data-ownerid');
+    var rate = Number(opt.getAttribute('data-price'));
+
+    var sDate = document.getElementById('bookStartDate').value;
+    var eDate = document.getElementById('bookEndDate').value;
+    var loc = document.getElementById('bookLocation').value;
+
+    var diff = Math.max(1, (new Date(eDate) - new Date(sDate)) / (1000 * 60 * 60 * 24));
+    var days = isNaN(diff) ? 1 : Math.max(1, Math.round(diff));
+
+    var booking = FarmRentAuth.createBooking({
+      equipmentId: eqId,
+      equipmentName: eqName,
+      equipmentImg: eqImg,
+      farmerId: currentUser.id,
+      farmerName: currentUser.name,
+      farmerPhone: currentUser.mobile,
+      ownerId: eqOwnerId,
+      ownerName: eqOwner,
+      startDate: sDate,
+      endDate: eDate,
+      days: days,
+      dailyRate: rate,
+      location: loc
+    });
+
+    closeModal('bookModal');
+    renderDashboard();
+    showToast('Booking ' + booking.id + ' Confirmed! Receipt generated.', 'success');
+  }
+
+  function toggleEquipmentAvail(id) {
+    var list = FarmRentAuth.getEquipmentList();
+    var eq = list.find(function(e){ return e.id === Number(id); });
+    if (eq) {
+      var newSt = (eq.status === 'Available') ? 'Maintenance' : 'Available';
+      FarmRentAuth.toggleEquipmentStatus(id, newSt);
+      renderOwnerEquipment();
+      showToast('Updated equipment status to ' + newSt, 'info');
+    }
+  }
+
+  function deleteEquipmentItem(id) {
+    if (confirm('Are you sure you want to remove this equipment listing?')) {
+      FarmRentAuth.deleteEquipment(id);
+      renderDashboard();
+      showToast('Equipment removed from your fleet', 'info');
+    }
+  }
+
+  function updateStatus(bookingId, status) {
+    FarmRentAuth.updateBookingStatus(bookingId, status);
+    renderDashboard();
+    showToast('Booking ' + bookingId + ' marked as ' + status, 'success');
+  }
+
+  function cancelBooking(bookingId) {
+    if (confirm('Cancel this equipment booking?')) {
+      FarmRentAuth.updateBookingStatus(bookingId, 'Cancelled');
+      renderDashboard();
+      showToast('Booking ' + bookingId + ' cancelled', 'info');
+    }
+  }
+
+  function toggleUserActivation(userId) {
+    var u = FarmRentAuth.toggleUserStatus(userId);
+    if (u) {
+      renderAdminUsers();
+      showToast('User ' + u.name + ' is now ' + u.status, 'info');
+    }
+  }
+
+  function viewReceipt(bookingId) {
+    var b = FarmRentAuth.getBookings().find(function(x){ return x.id === bookingId; });
+    if (!b) return;
+
+    var gst = Math.round((b.totalAmount || 0) * 0.05);
+    var grandTotal = (b.totalAmount || 0) + gst;
+
+    var html = '<div class="invoice-card">' +
+      '<div class="invoice-row"><span>Invoice ID:</span><strong>' + b.id + '</strong></div>' +
+      '<div class="invoice-row"><span>Booking Date:</span><span>' + (b.createdAt ? b.createdAt.split('T')[0] : '2026-08-23') + '</span></div>' +
+      '<div class="invoice-row"><span>Farmer (Renter):</span><span>' + b.farmerName + '</span></div>' +
+      '<div class="invoice-row"><span>Equipment Owner:</span><span>' + b.ownerName + '</span></div>' +
+      '<hr style="margin:10px 0; border:none; border-top:1px dashed var(--gray-300);" />' +
+      '<div class="invoice-row"><span>Equipment Item:</span><strong>' + b.equipmentName + '</strong></div>' +
+      '<div class="invoice-row"><span>Duration:</span><span>' + b.startDate + ' to ' + b.endDate + ' (' + b.days + ' Days)</span></div>' +
+      '<div class="invoice-row"><span>Daily Rate:</span><span>₹' + (b.dailyRate || 0).toLocaleString() + ' / day</span></div>' +
+      '<div class="invoice-row"><span>Rental Subtotal:</span><strong>₹' + (b.totalAmount || 0).toLocaleString() + '</strong></div>' +
+      '<div class="invoice-row"><span>Applicable GST (5%):</span><span>₹' + gst.toLocaleString() + '</span></div>' +
+      '<div class="invoice-row invoice-total"><span>Grand Total Paid:</span><span style="color:var(--green-700);">₹' + grandTotal.toLocaleString() + '</span></div>' +
+      '<div class="invoice-row" style="margin-top:6px; font-size:11px; color:var(--green-600);"><span>Payment Status:</span><strong>PAID (100% Secure Escrow)</strong></div>' +
+    '</div>';
+
+    document.getElementById('receiptContent').innerHTML = html;
+    document.getElementById('receiptModal').classList.add('open');
+  }
+
+  function printReceipt() {
+    window.print();
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  function handleLogout() {
+    FarmRentAuth.logout();
+  }
+
+  var toastTimer;
+  function showToast(msg, type) {
+    var t = document.getElementById('toast');
+    t.className = 'toast show ' + (type || 'info');
+    t.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.className = 'toast'; }, 3500);
+  }
+</script>
+
+</body>
+</html>
