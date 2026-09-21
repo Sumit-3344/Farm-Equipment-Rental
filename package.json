@@ -1,0 +1,19 @@
+{
+  "name": "farmrent",
+  "version": "1.0.0",
+  "description": "Farm Equipment Rental System",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "npm start --prefix server",
+    "dev": "npm run dev --prefix server",
+    "install:server": "npm install --prefix server",
+    "test:api": "node server/test-api.js"
+  },
+  "keywords": [
+    "farmrent",
+    "agriculture",
+    "equipment-rental"
+  ],
+  "author": "FarmRent Team",
+  "license": "ISC"
+}
